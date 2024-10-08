@@ -2,7 +2,7 @@
 /// <reference types="@sveltejs/kit" />
 /// <reference types="vite/client" />
 
-import type { ExposeInRendererTypes } from './preload.ts';
+import type { ExposeInRendererTypes } from './preload.js';
 
 declare global {
 	// Lets typescript know about exposed preload functions

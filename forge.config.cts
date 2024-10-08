@@ -2,6 +2,7 @@ import { MakerSquirrel } from '@electron-forge/maker-squirrel';
 import { MakerZIP } from '@electron-forge/maker-zip';
 import { MakerDeb } from '@electron-forge/maker-deb';
 import { MakerRpm } from '@electron-forge/maker-rpm';
+import { MakerDMG } from '@electron-forge/maker-dmg';
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
 import { ElectronForgeVitePlugin, OnRebuildDo } from './electronForgeVitePlugin.cts';
@@ -11,13 +12,16 @@ const config: ForgeConfig = {
 	// https://electron.github.io/packager/main/interfaces/Options.html
 	packagerConfig: {
 		asar: true,
+		extraResource: [
+			"./bin/ollama"
+		],
 		ignore: (file: string) => {
-			if(file === '') return false;
-			if(file.startsWith('/package.json')) return false;
-			if(file.startsWith('/node_modules/.bin')) return true;
-			if(file.startsWith('/node_modules/.vite')) return true;
-			if(file.startsWith('/node_modules')) return false;
-			if(file.startsWith('/.vite')) return false;
+			if (file === '') return false;
+			if (file.startsWith('/package.json')) return false;
+			if (file.startsWith('/node_modules/.bin')) return true;
+			if (file.startsWith('/node_modules/.vite')) return true;
+			if (file.startsWith('/node_modules')) return false;
+			if (file.startsWith('/.vite')) return false;
 
 			return true;
 		},
@@ -33,10 +37,11 @@ const config: ForgeConfig = {
 			//iconUrl: 'https://url/to/icon.ico',
 			// The ICO file to use as the icon for the generated Setup.exe
 			setupIcon: './static/icon.ico'
-      }),
-	  new MakerZIP({}, ['darwin']),
-	  new MakerRpm({}),
-	  new MakerDeb({
+		}),
+		new MakerDMG(),
+		new MakerZIP({}, ['darwin']),
+		new MakerRpm({}),
+		new MakerDeb({
 			options: {
 				// Path to a single image that will act as icon for the application
 				icon: './static/icon.png',
@@ -48,7 +53,7 @@ const config: ForgeConfig = {
 			builds: [{
 				configFile: './vite/vite.main.config.ts',
 				onRebuild: OnRebuildDo.RestartApp,
-			},{
+			}, {
 				configFile: './vite/vite.preload.config.ts',
 				onRebuild: OnRebuildDo.RestartRenderers,
 			}],

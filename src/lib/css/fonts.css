@@ -1,0 +1,20 @@
+@font-face {
+  font-family: 'custom_mono';
+  src: url('../fonts/mono.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'custom_serif';
+  src: url('../fonts/serif.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'custom_sans_serif';
+  src: url('../fonts/sans_serif.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}

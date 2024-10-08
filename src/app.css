@@ -1,8 +1,11 @@
+@import "./lib/css/fonts.css";
+@import "./lib/css/theme.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
+/* :root {
 	font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
 
 	font-synthesis: none;
@@ -17,4 +20,4 @@ body {
 	overflow: hidden;
 	width: 100vw;
 	height: 100vh;
-}
+} */

@@ -4,11 +4,13 @@ import { contextBridge, ipcRenderer } from 'electron';
 
 export type ExposeInRendererTypes = typeof exposeInRenderer;
 const exposeInRenderer = {
-	toggleDevTools: () => ipcRenderer.send('toggleDevTools'),
-	setTitleBarColors: (bgColor: string, iconColor: string) => {
-		document.documentElement.style.background = bgColor;
-		ipcRenderer.send('setTitleBarColors', bgColor, iconColor);
+	arthur: {
+		start: () => ipcRenderer.send('wake-up-arthur'),
+		says: (channel: string, callback: any) => {
+			const newCallback = (_: any, data: any) => callback(data);
+			ipcRenderer.on(channel, newCallback);
+		}
 	}
 };
 
-for(const [key, value] of Object.entries(exposeInRenderer)) contextBridge.exposeInMainWorld(key, value);
+for (const [key, value] of Object.entries(exposeInRenderer)) contextBridge.exposeInMainWorld(key, value);
