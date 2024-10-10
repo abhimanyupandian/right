@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { buildPayload } from "$lib/utils/arthur";
+	import { Arthur } from "$lib/utils/arthur";
 	import { Symbols } from "$lib/utils/constants";
 	import { selectionTracker } from "$lib/utils/stores";
 	import { clickOutside } from "$lib/utils/ui";
@@ -14,6 +14,7 @@
 	var messagesEl: HTMLElement;
 	export let prompt: string = "";
 	export let enabled: boolean = false;
+	export let isChatting: boolean;
 
 	const messages = writable<
 		{ source: "user" | "ai"; message: string; timestamp: string }[]
@@ -24,12 +25,9 @@
 	async function handleFreeText() {
 		startLoading();
 		startStreaming();
-		const { url, options } = buildPayload(`
-					This is the argument: ${$selectionTracker.content}
-					This is the question: ${prompt}
-					Please respond as accurately as possible without hallucinating. Just give me the response. You don't have to give me the exact steps that you are doing. When the user mentions "statement" or "this", the user is talking about the argument provided. The argument is basically a snippet of text extracted from a larger text. Ensure that all the responses are within the context of the argument provided. 
-					If the user asks something beyond the context, just greet them and tell them that you are not authorized to respond to anything beyond the context of the argument provided without providing any details of the context.
-				`);
+		const payload = Arthur.payload($selectionTracker.content, prompt);
+		if (!payload) return { status: false };
+		const { url, options } = payload;
 		try {
 			const messageId = new Date().getMilliseconds().toString();
 			setTimeout(() => {
@@ -63,7 +61,7 @@
 
 	function reset() {
 		prompt = "";
-		setTimeout(() => promptEl.focus(), 1);
+		if (enabled) setTimeout(() => promptEl.focus(), 1);
 		finishLoading();
 		finishStreaming();
 	}
@@ -134,20 +132,20 @@
 		setTimeout(() => refreshMessages(), 1);
 	}
 
-	$: if (chatFocused && promptEl) {
-		promptEl.focus();
+	$: if (enabled && promptEl) {
+		if (chatFocused) promptEl.focus();
 	}
 
 	onMount(() => {
-		promptEl.focus();
+		if (enabled) promptEl.focus();
 
 		promptEl.onfocus = () => (chatFocused = true);
 
 		document.addEventListener("keydown", function (event: any) {
 			if (event.metaKey && event.key === "/") {
 				event.preventDefault();
-				promptEl.focus();
-			}
+				if (enabled) promptEl.focus();
+			} else if (event.key === "Escape") isChatting = false;
 		});
 	});
 
@@ -201,7 +199,6 @@
 	class:opacity-100={chatFocused}
 	class:opacity-10={!chatFocused}
 	class:pb-10={IS_DESKTOP}
-	class:cursor-disabled={!enabled}
 	class="duration-100 flex-1 flex-col max-h-[calc(100vh)] max-w-[calc(100vw-976px)] min-w-[calc(100vw-976px)] justify-between px-4 lg:block md:hidden"
 >
 	<!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -284,10 +281,10 @@
 			on:keypress={handleKeyPress}
 			bind:this={promptEl}
 			bind:value={prompt}
-			disabled={isLoading || isStreaming}
+			disabled={isLoading || isStreaming || !enabled}
 			class:opacity-25={isLoading || isStreaming}
 			class="border-[0.1em] border-zinc-800 text-white text-md rounded-md block w-full p-2.5 outline-none focus:outline-none placeholder:text-zinc-500"
-			placeholder="Message Arthur"
+			placeholder={enabled ? "Message Arthur" : "Arthur AI not setup."}
 			required
 		/>
 	</div>

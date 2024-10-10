@@ -4,7 +4,7 @@ import url from 'url';
 import { stat } from 'node:fs/promises';
 import nodeChildProcess from 'child_process';
 
-import log from 'electron-log/main';
+import 'dotenv/config';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 import electronSquirrelStartup from 'electron-squirrel-startup';
@@ -71,7 +71,6 @@ function shutdown() {
 		ollama.kill('SIGINT');
 		ollama = null;
 	}
-	// process.exit(0);
 }
 
 function wakeUpArthur() {
@@ -79,7 +78,7 @@ function wakeUpArthur() {
 		ollama = nodeChildProcess.spawn(
 			path.join(ollamaPath, 'ollama'),
 			['serve'],
-			{ env: { ...process.env, OLLAMA_HOST: '127.0.0.1:11444' }, detached: false },
+			{ env: { ...process.env, OLLAMA_HOST: process.env.PUBLIC_OLLAMA_HOST }, detached: false },
 		);
 		authurId = ollama.pid;
 		ollama.stdout.on('data', (data) => {
@@ -113,9 +112,6 @@ function createWindow() {
 		height: 700,
 		minWidth: 400,
 		minHeight: 200,
-		// Window Controls Overlay API - https://developer.mozilla.org/en-US/docs/Web/API/Window_Controls_Overlay_API
-		// Allows for a custom window header while overlaying native window controls in the corner.
-		// https://www.electronjs.org/docs/latest/tutorial/window-customization#window-controls-overlay
 		titleBarStyle: 'hidden',
 		autoHideMenuBar: true,
 		backgroundColor: 'transparent',
@@ -136,6 +132,7 @@ function createWindow() {
 	mainWindow.maximize();
 }
 
+// Cleaning up the ollama process before exit
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
 app.on('before-quit', shutdown);

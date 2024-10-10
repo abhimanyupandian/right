@@ -2,7 +2,7 @@
 	"name": "right",
 	"productName": "Right",
 	"version": "1.0.0",
-	"description": "Distractionless Writing.",
+	"description": "Focused Writing.",
 	"main": ".vite/build/main/main.js",
 	"type": "module",
 	"scripts": {
@@ -45,13 +45,10 @@
 		"vitest": "^2.0.0"
 	},
 	"keywords": [],
-	"author": {
-		"name": "codec-xyz",
-		"email": "112908328+codec-xyz@users.noreply.github.com"
-	},
 	"license": "MIT",
 	"dependencies": {
 		"@svelte-plugins/tooltips": "^3.0.1",
+		"dotenv": "^16.4.5",
 		"electron-log": "^5.2.0",
 		"electron-squirrel-startup": "^1.0.1",
 		"electron-window-state": "^5.0.3"

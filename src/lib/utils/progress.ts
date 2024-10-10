@@ -23,7 +23,7 @@ export class Progress {
             .join(Symbols.SPACE);
         return { percent, html }
     }
-    static track(progressEl: any) {
+    static init(progressEl: any) {
         var progress = Array.from({ length: 10 }, (_, i) => Symbols.DOT)
             .map((v, i) => getDefaultProgressHtml(v))
             .join(Symbols.SPACE);

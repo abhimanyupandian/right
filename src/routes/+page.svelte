@@ -20,21 +20,23 @@
 	import Arthur from "$lib/components/Arthur.svelte";
 	import Viewer from "$lib/components/Viewer.svelte";
 	import Devtools from "$lib/components/Devtools.svelte";
-	import { buildPayload } from "$lib/utils/arthur";
+	import ArthurSettings from "$lib/components/ArthurSettings.svelte";
 
 	const IS_DESKTOP = !!(globalThis as any).IS_DESKTOP;
 
 	const pos: { x: number; y: number } = { x: 0, y: 0 };
-
 	var cursorPosition: number = -1;
+
+	var showArthurSettings: boolean = false;
 
 	var editorEl: any;
 	var progressEl: any;
 
 	var isChatting = false;
-	var contextEl: any;
+	var setupDone: boolean = false;
 
 	function restoreSelection(target: any) {
+		if (!target) return;
 		target.setSelectionRange(
 			$selectionTracker.range.start,
 			$selectionTracker.range.end,
@@ -47,6 +49,7 @@
 	}
 
 	function saveSelection(target: any) {
+		if (!target) return;
 		$selectionTracker = {
 			range: {
 				start: target.selectionStart,
@@ -81,29 +84,12 @@
 		saveSelection(editorEl);
 	}
 
-	$: if (contextEl) {
-		document.getElementById("context-selected")!.scrollIntoView({
-			behavior: "smooth",
-			block: "center",
-		});
-	}
-
-	$: if (!contextEl && editorEl) {
-		restoreSelection(editorEl);
-	}
-
 	function closeChat() {
+		if (!isChatting) return;
 		isChatting = false;
-		isReady = false;
 	}
 
-	function closeOverlay(event: any) {
-		if (event.key === "Escape") closeChat();
-	}
-
-	var isReady: boolean = false;
-
-	$: if (editorEl && !isReady) {
+	function initListeners(editorEl: HTMLElement) {
 		editorEl.addEventListener("scroll", () => {
 			updateProgress(editorEl);
 		});
@@ -112,7 +98,7 @@
 			if (event.metaKey && event.key === "/") {
 				event.preventDefault();
 				openChat();
-			}
+			} else if (event.key === "Escape") closeChat();
 		});
 
 		editorEl.addEventListener("contextmenu", (event: any) => {
@@ -122,7 +108,7 @@
 		editorEl.addEventListener("selectionchange", (event: any) => {
 			var target = event.target as any;
 			syncIndexWithCursor(target);
-			var value = (target.value as string) ?? Symbols.EMPTY;
+			var value = target.value;
 			$selection.content = value.substring(
 				target.selectionStart,
 				target.selectionEnd,
@@ -139,23 +125,31 @@
 			pos.x = editorEl.offsetLeft + editorEl.offsetWidth;
 			pos.y = caret.top;
 		});
-		restoreSelection(editorEl);
-		isReady = true;
 	}
 
-	arthurReady.subscribe((ready) => {
-		if (ready) console.log("Arthur Ready!");
-	});
+	// First time setup
+	$: if (editorEl && !setupDone) {
+		initListeners(editorEl);
+	}
+	
+	// Whenever chat is closed
+	$: if (!isChatting && editorEl) {
+		restoreSelection(editorEl);
+		initListeners(editorEl);
+	}
 
+	// Mounting
 	onMount(() => {
 		Theme.install();
-		Progress.track(progressEl);
+		Progress.init(progressEl);
 		ArthurAI.wakeup();
 	});
 </script>
 
 <div class:pt-8={IS_DESKTOP} class="flex flex-col h-[100vh] relative">
-	<status class="h-[32px] flex flex-row w-full min-w-full justify-between items-center">
+	<status
+		class="h-[64px] flex flex-row w-full min-w-full justify-between items-center"
+	>
 		<div></div>
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<Tooltip
@@ -167,15 +161,16 @@
 			}}
 			content={$arthurReady
 				? "Arthur AI is ready!"
-				: "Arthur AI is unavailable. Tap to wake up!"}
+				: "Arthur AI is unavailable. Tap to configure."}
 		>
-			<!-- svelte-ignore a11y_click_events_have_key_events -->
-			<div
-				on:click={ArthurAI.wakeup}
+			<!-- svelte-ignore a11y_consider_explicit_label -->
+			<button
+				on:click={() => (showArthurSettings = true)}
 				class:bg-red-700={!$arthurReady}
 				class:bg-green-700={$arthurReady}
 				class="hover:opacity-100 opacity-25 rounded-full w-10 h-2 m-2 mr-2"
-			></div>
+			>
+			</button>
 		</Tooltip>
 		<div></div>
 	</status>
@@ -184,20 +179,14 @@
 	>
 		<Nav bind:cursorPosition />
 		{#if isChatting}
-			<Viewer />
+			<Viewer bind:isChatting />
+			<Arthur bind:isChatting bind:enabled={$arthurReady} />
 		{:else}
 			<Editor bind:editorEl />
-		{/if}
-		{#if isChatting && $arthurReady}
-			<Arthur bind:enabled={$arthurReady} />
 		{/if}
 	</div>
 
 	<Stats bind:progressEl bind:arthurReady={$arthurReady} />
-
-	{#if isChatting}
-		<!-- <Chat bind:contextEl /> -->
-	{/if}
 </div>
 
-<svelte:window on:keydown={closeOverlay} />
+<ArthurSettings bind:showArthurSettings></ArthurSettings>
