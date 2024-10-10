@@ -5,7 +5,6 @@
 	import { onMount } from "svelte";
 
 	export let progressEl: any;
-	export let arthurReady: boolean = false;
 
 	var time: string = getCurrentTime();
 

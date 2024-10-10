@@ -14,9 +14,3 @@ export type Stats = {
     selectedW: number,
     selectedC: number
 }
-export type ModelDetails = {
-    name: string,
-    model: string,
-    pSize: string,
-    size: number
-}
