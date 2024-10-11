@@ -6,13 +6,13 @@
 	export let cursorPosition: number;
 </script>
 
-<div id="nav" class="max-w-[320px] min-w-[320px] flex-0 px-2 max-h-[calc(100vh-72px)] pb-24">
+<div id="nav" class="max-w-[320px] min-w-[320px] flex-0 px-4 max-h-[calc(100vh-72px)] pb-24">
 	{#each Object.values($index) as each}
 		<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 		{#if each.type != 'content'}
 			<!-- svelte-ignore a11y-click-events-have-key-events -->
 			<ul
-				class={`${each.type} w-fit px-2 cursor-pointer`}
+				class={`${each.type} w-fit cursor-pointer`}
 				class:opacity-50={each.index !== cursorPosition}
 				class:text-white={each.index === cursorPosition}
 				on:click={() => scrollToLine(each.line)}
@@ -38,6 +38,9 @@
 		transition: left 200ms;
 		scrollbar-width: none;
 		z-index: 0;
+	}
+	.section {
+		@apply pl-0;
 	}
 
 	.title {

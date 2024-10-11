@@ -1,5 +1,5 @@
 
-export type IndexType = "title" | "subtitle" | "heading" | "content";
+export type IndexType = "chapter" | "title" | "subtitle" | "heading" | "content";
 export type IndexEntry = {
     type: IndexType;
     line: number;
@@ -14,3 +14,4 @@ export type Stats = {
     selectedW: number,
     selectedC: number
 }
+export type TagType = "title" | "author" | "ref"

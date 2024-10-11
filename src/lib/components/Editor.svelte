@@ -1,11 +1,27 @@
 <script lang="ts">
-	import { content } from '$lib/utils/stores';
+	import { currentNotepad, Saver } from "$lib/utils/stores";
+	import { onMount } from "svelte";
 
-	export let editorEl;
+	export let editorEl: HTMLElement;
+
+	onMount(() => {
+		document.addEventListener("keydown", function (event) {
+			if ((event.ctrlKey || event.metaKey) && event.key === "s") {
+				event.preventDefault();
+				Saver.save();
+			}
+		});
+	});
 </script>
 
 <div class="flex min-w-[640px] max-w-[640px]">
-	<textarea id="editor" bind:this={editorEl} bind:value={$content} />
+	<!-- svelte-ignore element_invalid_self_closing_tag -->
+	<textarea
+		id="editor"
+		on:input={() => Saver.save({ delay: 2 * 1000 })}
+		bind:this={editorEl}
+		bind:value={$currentNotepad.content}
+	/>
 </div>
 
 <style>

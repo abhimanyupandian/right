@@ -1,7 +1,11 @@
 // place files you want to import through the `$lib` alias in this folder.
 
-import type { IndexType } from "./types";
+import type { IndexType, TagType } from "./types";
+import { v4 as uuidv4 } from "uuid";
 
+export const Defaults = {
+    notepadName: "Untitled"
+}
 export const Symbols = {
     EOL: "\n",
     SPACE: " ",
@@ -10,7 +14,14 @@ export const Symbols = {
     EMPTY: ""
 }
 
+export const Tags: Record<TagType, string> = {
+    title: "@title" + Symbols.SPACE,
+    author: "@author" + Symbols.SPACE,
+    ref: "@ref" + Symbols.SPACE,
+}
+
 export const Delimeters: Record<IndexType, string> = {
+    chapter: ">" + Symbols.SPACE,
     title: "#" + Symbols.SPACE,
     subtitle: "##" + Symbols.SPACE,
     heading: "--" + Symbols.SPACE,
@@ -18,6 +29,7 @@ export const Delimeters: Record<IndexType, string> = {
 };
 
 export const Indicator: Record<IndexType, string> = {
+    chapter: Symbols.SPACE,
     title: Symbols.DOT,
     subtitle: Symbols.DOT,
     heading: Symbols.DASH,
@@ -41,24 +53,33 @@ export const DefaultTheme = {
     "line-height": "24px",
 };
 
-export const PageContent = `# Welcome
+export const PageContent = `> The Modern Engineer
+
 # Introduction
-# Chapter 1
-Numbers are fundamental to computer science because they are the primary means by which information is represented and processed. At the most basic level, all digital computers operate using numbers, specifically binary numbers, which consist of only two values: 0 and 1. These values correspond to the electrical states within the computer's hardware, where 0 represents an “off” state and 1 represents an “on” state. Every piece of data, every instruction, and every computation is ultimately expressed through combinations of these binary digits, or bits. This low-level representation enables computers to perform the vast array of tasks that define modern technology, from simple calculations to complex artificial intelligence algorithms.
 
-## What are they?
-Numbers are also integral to higher-level programming. In almost every programming language, numbers are used to manipulate data, control the flow of logic, and structure algorithms. For instance, loops are often defined using numerical conditions (e.g., “for i = 0 to 10”), and numerical data types (integers, floats, etc.) are used to perform arithmetic, store values, and represent things like coordinates in graphics. Beyond arithmetic, numbers enable optimization, pattern recognition, and decision-making in software. Algorithms, the core of problem-solving in computer science, frequently rely on numerical processes, whether sorting data, solving equations, or processing signals.
+We are born into this world without choosing—without choosing to be born, without choosing the parents we are born to, our location in time and space we are born at, the bodies we are born into, and all the rest. As we open our eyes, we peer out at a world moving around us—a world that we had no say in. And soon, to paraphrase existentialist philosopher Jean-Paul Sartre, we will begin to face the problem of choosing what we do with what's been done to us. Jean-Paul Sartre is one of the most widely recognized and cited thinkers of existentialism, a movement of thinking that took form during the nineteenth century, initially fashioned by individuals like Søren Kierkegaard, Friedrich Nietzsche, and Fyodor Dostoevsky, and then further popularized by individuals including Albert Camus, Martin Heidegger, and, of course, Sartre. In Sartre's lecture, Existentialism is a Humanism, he famously summarized the primary principle of existentialism with the line: “Existence precedes essence.” Essence, here, means the qualities of a thing that create its purpose. For example, Sartre referenced how a paper knife is designed with a specific purpose in mind before it is made, and only once it is given a predetermined purpose and designed accordingly, is it manufactured into being; in which case, its essence precedes its existence. With the exception of itself, humanity does this with nearly everything it makes. As rational beings, we create things for reasons. Even if the reason is to make the point that we can create things for no reason, we have merely found ourselves in the paradox of creating for the reason of having none. We exist with the innate desire for reasons—reasons for what we do, who we are, why we are, and so on. And here lies the beginning of our existential problem. According to Sartre and many others, there is no predetermined meaning or reason to human life. There is no authority figure designing us or our lives. And there is no essence to our existence prior to our existence. Rather, life exists for itself. Beyond itself, it is intrinsically meaningless. Whenever we confront this potential realization—that the nature of life, including our self, appears not to agree with reason—we can often find ourselves in a sort of existential crisis. However, Sartre and the existentialists don't see this as despairing, but rather, freeing.
 
-# Chapter 2
-However, while numbers are central to computation, they are not the only means of representing information. For example, logic-based systems, such as Boolean algebra, use true/false (or 1/0) conditions to model logical operations, which are critical in both software and hardware design. In programming, strings (textual data) and abstract data structures like trees or graphs offer ways to manipulate data that are less number-centric. Yet, even these alternatives are, at some level, reducible to numerical forms when processed by the machine. For instance, characters in a string are represented by numerical codes (such as ASCII), and abstract structures like graphs are often modeled numerically for processing by algorithms.
-
-## Why do we need them?
-In the realm of advanced computing, alternatives like quantum computing offer a glimpse into new paradigms that could reduce the dominance of traditional number-based computation. In quantum computing, information is stored in qubits, which, unlike classical bits, can represent multiple states simultaneously due to the principles of quantum superposition. This creates new opportunities for computational processes that are less dependent on traditional numerical computation. Nevertheless, even quantum computers still rely on numbers, albeit in a more complex form, to process information.
-
-## Can they help us understand the universe?
-The historical significance of numbers in computer science dates back to the earliest ideas of automated computation. Charles Babbage’s Analytical Engine, conceptualized in the 19th century, was designed to perform calculations using numbers mechanically. Later, the development of electronic computers in the mid-20th century, like the ENIAC, further solidified the importance of numbers by making digital, binary-based computation possible. With the advent of digital computing, the use of binary numbers became central to all modern computational systems. From that point on, numbers, especially in binary form, became synonymous with computing, defining how machines store, process, and transmit data.
-
-Over time, as the complexity of computers grew, the role of numbers expanded from simple calculations to underpinning the entire infrastructure of modern technology. Numbers drive algorithms that power everything from scientific simulations to machine learning models, control systems, and communication protocols. The numerical foundation of computer science ensures efficiency, precision, and scalability, which are vital for the performance of large-scale systems. Even as new computational paradigms emerge, numbers are likely to remain central due to their deeply ingrained role in how we interact with, understand, and build technology.
-
-In conclusion, numbers are essential to computer science because they serve as the fundamental building blocks of computation, both at the hardware and software levels. While alternatives like Boolean logic and quantum computing offer other means of representing and processing information, these systems either supplement numerical computation or transform it into more complex numerical forms. Since the earliest days of mechanical computation, numbers have been the core mechanism enabling machines to solve problems, and they continue to be crucial in driving innovation and progress in the field.
+Robert Pantano. The Art of Living a Meaningless Existence Ideas From Philosophy That Change the Way You Think (Robert Pantano) (Z-Library) (pp. 97-98). Kindle Edition. 
 `
+
+export function getNewNotepadMetdata() {
+    return {
+        id: uuidv4(),
+        content: `@title ${Defaults.notepadName}
+
+> Lorem Ipsum
+
+# Introduction
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+## Subheading
+Donec sit amet nulla a arcu malesuada efficitur non vitae velit. Proin ultricies vehicula magna, sit amet suscipit magna aliquet id. Integer blandit purus vitae sapien suscipit, sed vulputate lacus molestie. Nullam bibendum, tortor a tincidunt malesuada, justo nisl vestibulum velit, eget fermentum risus dui at mauris.
+        `,
+        createdOn: Date.now(),
+        modifiedOn: Date.now(),
+        tags: [],
+        name: Defaults.notepadName,
+        notes: [],
+        author: ""
+    }
+}

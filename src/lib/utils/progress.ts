@@ -23,11 +23,12 @@ export class Progress {
             .join(Symbols.SPACE);
         return { percent, html }
     }
-    static init(progressEl: any) {
+    static init(target: any) {
+        if (!target) return;
         var progress = Array.from({ length: 10 }, (_, i) => Symbols.DOT)
             .map((v, i) => getDefaultProgressHtml(v))
             .join(Symbols.SPACE);
-        progressEl.innerHTML = progress;
+        target.innerHTML = progress;
     }
 }
 
