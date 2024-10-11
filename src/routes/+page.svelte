@@ -89,7 +89,6 @@
 	// Mounting
 	onMount(() => {
 		Theme.install();
-		Progress.init(progressEl);
 	});
 
 	var showIntroduction: boolean = false;
@@ -97,6 +96,8 @@
 
 	$: if (showIntroduction) {
 		getSavedNotepads().then((v) => (savedNotepads = v));
+	} else {
+		Progress.init(progressEl);
 	}
 
 	async function getSavedNotepads() {
