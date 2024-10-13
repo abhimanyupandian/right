@@ -15,14 +15,12 @@
     var doneSearching: boolean = true;
 
     $: if (commandEl) {
+        console.log(">>>")
         query = "";
         filtered = [];
         selectedNotepadIndex = -1;
         commandEl.focus();
-    }
-
-    $: if (selectedNotepadIndex < 0 && commandEl) {
-        commandEl.focus();
+        refreshList();
     }
 
     function handleKeydown(event: any) {
@@ -42,7 +40,10 @@
                 event.preventDefault();
                 if (selectedNotepadIndex > 0) {
                     selectedNotepadIndex--;
-                } else commandEl.focus();
+                } else {
+                    if (commandEl) commandEl.focus();
+                    selectedNotepadIndex = -1;
+                }
             } else if (event.key === "Enter") {
                 event.preventDefault();
                 if (
@@ -75,9 +76,9 @@
         db.notepad
             .toArray()
             .then((notepads) => {
-                notepads = notepads.sort((a, b) => b.modifiedOn - a.modifiedOn);
+                var filtered_ = [];
                 if (query) {
-                    filtered = notepads.filter(
+                    filtered_ = notepads.filter(
                         (c) =>
                             c.name
                                 .toLowerCase()
@@ -89,15 +90,12 @@
                                 .toLocaleString()
                                 .includes(query),
                     );
-                } else filtered = notepads;
+                } else filtered_ = notepads.slice(0, 5);
+                filtered = filtered_.sort((a, b) => b.modifiedOn - a.modifiedOn);
                 doneSearching = true;
-                commandEl.focus();
+                if (commandEl) commandEl.focus();
             })
             .catch((_) => (doneSearching = true));
-    }
-
-    $: if ($showFileHunter) {
-        refreshList();
     }
 
     let isConfirming: Record<string, any> = {};

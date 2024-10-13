@@ -92,8 +92,8 @@
 			</div>
 			<div class="h-2"></div>
 			<div class="">
-				<div class="text-xl opacity-25 select-none">Recents</div>
-				{#if savedNotepads}
+				{#if savedNotepads.length}
+					<div class="text-xl opacity-25 select-none">Recents</div>
 					{#each savedNotepads as each (each.id)}
 						<!-- svelte-ignore a11y_no_static_element_interactions -->
 						<div
