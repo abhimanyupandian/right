@@ -3,10 +3,7 @@ import { type IndexEntry, type Stats, type TagType } from "./types";
 import { db, type Notepad } from "./db";
 import { Defaults, Symbols, Tags } from "./constants";
 
-
-export const currentNotepad = writable<Notepad>(JSON.parse(localStorage.currentNotepad ?? null));
-currentNotepad.subscribe((value) => localStorage.currentNotepad = JSON.stringify(value));
-
+export const currentNotepad = writable<Notepad>();
 export const index = writable<IndexEntry[]>([]);
 export const stats = writable<Stats>({
     percent: "0.0",

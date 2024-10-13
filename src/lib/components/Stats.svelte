@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { Delimeters, Symbols, Tags } from "$lib/utils/constants";
+	import { Delimeters, Symbols } from "$lib/utils/constants";
 	import { currentNotepad, index, stats } from "$lib/utils/stores";
-	import type { IndexEntry, IndexType, TagType } from "$lib/utils/types";
+	import type { IndexEntry, IndexType } from "$lib/utils/types";
 	import TimeAgo from "javascript-time-ago";
 	import { onMount } from "svelte";
 	import { get } from "svelte/store";
@@ -10,7 +10,6 @@
 	export let progressEl: any;
 
 	TimeAgo.addLocale(en);
-	// Create formatter (English).
 	const timeAgo = new TimeAgo("en-US");
 	var time: string = getCurrentTime();
 	var lastSaveTime: number = get(currentNotepad).modifiedOn;

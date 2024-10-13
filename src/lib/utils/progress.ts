@@ -10,6 +10,7 @@ export class Progress {
             1,
             scrollMax === 0 ? 0 : scrollDistance / scrollMax,
         );
+        console.log(scrollMax)
         var percent = (
             Math.round(
                 Math.min(1, scrollMax === 0 ? 0 : scrollDistance / scrollMax) *
@@ -21,7 +22,8 @@ export class Progress {
                 return i < ratio * 10 ? `<b>${v}</b>` : getDefaultProgressHtml(v);
             })
             .join(Symbols.SPACE);
-        return { percent, html }
+     
+            return { percent, html }
     }
     static init(target: any) {
         if (!target) return;
