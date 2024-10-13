@@ -23,11 +23,6 @@ highlight b {
     border-bottom: 1px solid var(--f_low) !important;
 }
 
-::selection {
-    background: var(--hl_bg) !important;
-    color: var(--hl_fg) !important
-}
-
 navi {
     color: var(--f_low) !important
 }

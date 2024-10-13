@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { getNewNotepadMetdata } from "$lib/utils/constants";
 	import { db, type Notepad } from "$lib/utils/db";
+	import { showFileHunter } from "$lib/utils/stores";
 	import { onMount } from "svelte";
 
 	var savedNotepads: Notepad[] = [];
@@ -22,7 +23,9 @@
 		return notepads;
 	}
 
-	function onShowMore() {}
+	function onShowMore() {
+		$showFileHunter = true;
+	}
 </script>
 
 <div
@@ -32,18 +35,33 @@
 		class="max-w-[320px] min-w-[320px] flex-0 px-4 max-h-[calc(100vh-72px)] pb-24"
 	></div>
 	<div class="flex flex-col justify-center items-start">
-		<div class="text-3xl font-bold">Right</div>
-		<div class="text-xl font-bold opacity-50">Focused Writing.</div>
+		<div class="flex flex-row justify-center items-center space-x-4">
+			<div>
+				<img
+					alt="logo"
+					src="icon.png"
+					width="75"
+					height="75"
+					class="rounded-md"
+				/>
+			</div>
+			<div>
+				<div class="text-3xl font-bold">Right.</div>
+				<div class="text-xl font-bold opacity-50">Focused Writing.</div>
+			</div>
+		</div>
 		<div class="h-4"></div>
 		<div class="flex flex-col space-y-1">
 			<div class="text-xl opacity-25 select-none">Start</div>
 			<!-- svelte-ignore a11y_click_events_have_key_events -->
 			<!-- svelte-ignore a11y_no_static_element_interactions -->
-			<div
-				on:click={onNewNotepad}
-				class=" text-blue-500 rounded-sm cursor-pointer"
-			>
-				{`New`}
+			<div class="flex flex-row justify-start space-x-1 items-center">
+				<div
+					on:click={onNewNotepad}
+					class=" text-blue-500 rounded-sm cursor-pointer"
+				>
+					{`New`}
+				</div>
 			</div>
 			<div class="h-2"></div>
 			<div class="text-xl opacity-25 select-none">Recents</div>

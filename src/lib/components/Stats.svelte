@@ -117,5 +117,6 @@
 	}
 	.stats {
 		background: var(--background) !important;
+		z-index: 0;
 	}
 </style>

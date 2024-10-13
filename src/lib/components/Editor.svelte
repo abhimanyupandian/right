@@ -38,4 +38,8 @@
 		scrollbar-width: none;
 		z-index: 0;
 	}
+	::selection {
+		background: var(--hl_bg) !important;
+		color: var(--hl_fg) !important;
+	}
 </style>

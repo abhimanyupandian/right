@@ -3,6 +3,7 @@ import { type IndexEntry, type Stats, type TagType } from "./types";
 import { db, type Notepad } from "./db";
 import { Defaults, Symbols, Tags } from "./constants";
 
+export const showFileHunter = writable<boolean>(false);
 export const currentNotepad = writable<Notepad>();
 export const index = writable<IndexEntry[]>([]);
 export const stats = writable<Stats>({
