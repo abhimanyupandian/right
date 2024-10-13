@@ -1,10 +1,13 @@
 <script lang="ts">
-	import { currentNotepad, Saver } from "$lib/utils/stores";
+	import { Saver } from "$lib/utils/db";
+	import { Progress } from "$lib/utils/progress";
+	import { currentNotepad } from "$lib/utils/stores";
 	import { onMount } from "svelte";
 
 	export let editorEl: HTMLElement;
 
 	onMount(() => {
+		Progress.track();
 		document.addEventListener("keydown", function (event) {
 			if ((event.ctrlKey || event.metaKey) && event.key === "s") {
 				event.preventDefault();
@@ -15,13 +18,12 @@
 </script>
 
 <div class="flex min-w-[640px] max-w-[640px]">
-	<!-- svelte-ignore element_invalid_self_closing_tag -->
 	<textarea
 		id="editor"
 		on:input={() => Saver.save({ delay: 2 * 1000 })}
 		bind:this={editorEl}
 		bind:value={$currentNotepad.content}
-	/>
+	></textarea>
 </div>
 
 <style>

@@ -1,7 +1,6 @@
 <script lang="ts">
-	import { Delimeters, Symbols } from "$lib/utils/constants";
-	import { currentNotepad, index, stats } from "$lib/utils/stores";
-	import type { IndexEntry, IndexType } from "$lib/utils/types";
+	import { Symbols } from "$lib/utils/constants";
+	import { currentNotepad, stats } from "$lib/utils/stores";
 	import TimeAgo from "javascript-time-ago";
 	import { onMount } from "svelte";
 	import { get } from "svelte/store";
@@ -20,50 +19,6 @@
 		const minutes = now.getMinutes().toString().padStart(2, "0"); // Get minutes and pad with 0 if needed
 		return `${hours}:${minutes}`;
 	}
-
-	function getIndexType(line: string) {
-		if (line.startsWith(Delimeters.title)) return "title";
-		else if (line.startsWith(Delimeters.subtitle)) return "subtitle";
-		else if (line.startsWith(Delimeters.heading)) return "heading";
-		else if (line.startsWith(Delimeters.chapter)) return "chapter";
-		return "content";
-	}
-
-	function splitByType(line: string, type: IndexType) {
-		var delimeter = Delimeters[type];
-		return (line.split(delimeter)[1] ?? "").trim();
-	}
-
-	currentNotepad.subscribe((c) => {
-		if (!c) return;
-		var index_: IndexEntry[] = [];
-		var line = 0;
-		var lastIndex = 0;
-		$stats.totalC = 0;
-		$stats.totalW = 0;
-		for (var eachLine of c.content.split(Symbols.EOL)) {
-			var start = $stats.totalC + line;
-			var end = start + eachLine.length;
-			$stats.totalC += eachLine.length;
-			$stats.totalW += eachLine
-				.split(Symbols.SPACE)
-				.filter((e) => e.trim().length).length;
-			var type = getIndexType(eachLine) as IndexType;
-			if (type != "content") lastIndex = line;
-			index_.push({
-				line,
-				label:
-					type == "content"
-						? Symbols.EMPTY
-						: splitByType(eachLine, type),
-				type,
-				index: lastIndex,
-				range: { start, end },
-			});
-			line++;
-		}
-		$index = index_;
-	});
 
 	onMount(() => {
 		var clock = setInterval(() => {

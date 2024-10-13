@@ -28,26 +28,29 @@
             event.preventDefault();
             $showFileHunter = !$showFileHunter;
         }
-        if ($showFileHunter && event.key == "Escape") $showFileHunter = false;
-        if (event.key === "ArrowDown") {
-            event.preventDefault();
-            if (selectedNotepadIndex < filtered.length - 1) {
-                selectedNotepadIndex++;
-            }
-        } else if (event.key === "ArrowUp") {
-            event.preventDefault();
-            if (selectedNotepadIndex > 0) {
-                selectedNotepadIndex--;
-            } else commandEl.focus();
-        } else if (event.key === "Enter") {
-            event.preventDefault();
-            if (
-                selectedNotepadIndex >= 0 &&
-                selectedNotepadIndex < filtered.length
-            ) {
-                document
-                    .getElementById(`notepad#${selectedNotepadIndex}`)
-                    ?.click();
+
+        if ($showFileHunter) {
+            if (event.key == "Escape") $showFileHunter = false;
+            else if (event.key === "ArrowDown") {
+                event.preventDefault();
+                if (selectedNotepadIndex < filtered.length - 1) {
+                    selectedNotepadIndex++;
+                }
+            } else if (event.key === "ArrowUp") {
+                event.preventDefault();
+                if (selectedNotepadIndex > 0) {
+                    selectedNotepadIndex--;
+                } else commandEl.focus();
+            } else if (event.key === "Enter") {
+                event.preventDefault();
+                if (
+                    selectedNotepadIndex >= 0 &&
+                    selectedNotepadIndex < filtered.length
+                ) {
+                    document
+                        .getElementById(`notepad#${selectedNotepadIndex}`)
+                        ?.click();
+                }
             }
         }
     }
@@ -59,8 +62,17 @@
             db.notepad
                 .toArray()
                 .then((notepads) => {
-                    filtered = notepads.filter((c) =>
-                        c.name.toLowerCase().includes(query.toLowerCase()),
+                    filtered = notepads.filter(
+                        (c) =>
+                            c.name
+                                .toLowerCase()
+                                .includes(query.toLowerCase()) ||
+                            new Date(c.modifiedOn)
+                                .toLocaleString()
+                                .includes(query) ||
+                            new Date(c.createdOn)
+                                .toLocaleString()
+                                .includes(query),
                     );
                     doneSearching = true;
                     commandEl.focus();
@@ -81,7 +93,7 @@
     function disableQueryHandlingIfRequired(e: any) {
         if (!doneSearching) e.preventDefault();
     }
-    
+
     $: if ($showFileHunter) {
         doneSearching = false;
         db.notepad

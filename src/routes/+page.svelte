@@ -48,7 +48,7 @@
 			</div>
 			<div>
 				<div class="text-3xl font-bold">Right.</div>
-				<div class="text-xl font-bold opacity-50">Focused Writing.</div>
+				<div class="text-xl font-bold opacity-25">Focused Writing.</div>
 			</div>
 		</div>
 		<div class="h-4"></div>

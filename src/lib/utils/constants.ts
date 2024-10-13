@@ -11,7 +11,8 @@ export const Symbols = {
     SPACE: " ",
     DOT: "•",
     DASH: "-",
-    EMPTY: ""
+    EMPTY: "",
+    AT: "@"
 }
 
 export const Tags: Record<TagType, string> = {

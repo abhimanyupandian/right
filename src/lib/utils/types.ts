@@ -9,9 +9,13 @@ export type IndexEntry = {
 };
 export type Stats = {
     percent: string,
+    absW: number,
+    absC: number,
     totalW: number,
     totalC: number,
+    totalL: number,
     selectedW: number,
-    selectedC: number
+    selectedC: number,
+    selectedL: number
 }
 export type TagType = "title" | "author" | "ref"
