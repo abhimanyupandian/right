@@ -17,6 +17,10 @@
         commandEl.focus();
     }
 
+    $: if (selectedNotepadIndex < 0 && commandEl) {
+        commandEl.focus();
+    }
+
     function handleKeydown(event: any) {
         if (event.key === "o" && (event.ctrlKey || event.metaKey)) {
             event.preventDefault();
@@ -32,7 +36,7 @@
             event.preventDefault();
             if (selectedNotepadIndex > 0) {
                 selectedNotepadIndex--;
-            }
+            } else commandEl.focus();
         } else if (event.key === "Enter") {
             event.preventDefault();
             if (
