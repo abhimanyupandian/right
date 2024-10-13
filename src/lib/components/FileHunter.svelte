@@ -10,6 +10,8 @@
     let filtered: Notepad[] = [];
     var selectedNotepadIndex: number = -1;
 
+    var doneSearching: boolean = true;
+
     $: if (commandEl) {
         query = "";
         filtered = [];
@@ -53,11 +55,17 @@
     function handleQuery(_: any) {
         if (!query) filtered = [];
         else {
-            db.notepad.toArray().then((notepads) => {
-                filtered = notepads.filter((c) =>
-                    c.name.toLowerCase().includes(query.toLowerCase()),
-                );
-            });
+            doneSearching = false;
+            db.notepad
+                .toArray()
+                .then((notepads) => {
+                    filtered = notepads.filter((c) =>
+                        c.name.toLowerCase().includes(query.toLowerCase()),
+                    );
+                    doneSearching = true;
+                    commandEl.focus();
+                })
+                .catch((_) => (doneSearching = true));
         }
     }
 
@@ -69,6 +77,22 @@
             }
         });
     });
+
+    function disableQueryHandlingIfRequired(e: any) {
+        if (!doneSearching) e.preventDefault();
+    }
+    
+    $: if ($showFileHunter) {
+        doneSearching = false;
+        db.notepad
+            .toArray()
+            .then((notepads) => {
+                filtered = notepads;
+                doneSearching = true;
+                commandEl.focus();
+            })
+            .catch((_) => (doneSearching = true));
+    }
 </script>
 
 {#if $showFileHunter}
@@ -87,6 +111,7 @@
                 bind:this={commandEl}
                 bind:value={query}
                 on:input={handleQuery}
+                on:keydown={disableQueryHandlingIfRequired}
                 class="w-full p-2 rounded outline-none text-black border-zinc-800"
                 placeholder="Search for notepads..."
             />
