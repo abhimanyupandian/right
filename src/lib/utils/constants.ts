@@ -1,7 +1,7 @@
 // place files you want to import through the `$lib` alias in this folder.
 
 import type { IndexType, TagType } from "./types";
-import { v4 as uuidv4 } from "uuid";
+import uuid from "short-uuid";
 
 export const Defaults = {
     notepadName: "Untitled"
@@ -58,7 +58,7 @@ export const PageContent = ``
 
 export function getNewNotepadMetdata() {
     return {
-        id: uuidv4(),
+        id: uuid.generate(),
         content: `@title ${Defaults.notepadName}`,
         createdOn: Date.now(),
         modifiedOn: Date.now(),

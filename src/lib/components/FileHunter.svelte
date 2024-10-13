@@ -1,6 +1,8 @@
 <script lang="ts">
+    import { goto } from "$app/navigation";
+    import { page } from "$app/stores";
     import { db, type Notepad } from "$lib/utils/db";
-    import { showFileHunter } from "$lib/utils/stores";
+    import { recentsRefresher, showFileHunter } from "$lib/utils/stores";
     import { onMount } from "svelte";
 
     var commandEl: HTMLElement;
@@ -55,32 +57,6 @@
         }
     }
 
-    function handleQuery(_: any) {
-        if (!query) filtered = [];
-        else {
-            doneSearching = false;
-            db.notepad
-                .toArray()
-                .then((notepads) => {
-                    filtered = notepads.filter(
-                        (c) =>
-                            c.name
-                                .toLowerCase()
-                                .includes(query.toLowerCase()) ||
-                            new Date(c.modifiedOn)
-                                .toLocaleString()
-                                .includes(query) ||
-                            new Date(c.createdOn)
-                                .toLocaleString()
-                                .includes(query),
-                    );
-                    doneSearching = true;
-                    commandEl.focus();
-                })
-                .catch((_) => (doneSearching = true));
-        }
-    }
-
     onMount(() => {
         window.addEventListener("keydown", handleKeydown);
         window.addEventListener("click", function (e) {
@@ -94,17 +70,53 @@
         if (!doneSearching) e.preventDefault();
     }
 
-    $: if ($showFileHunter) {
+    function refreshList(query?: string) {
         doneSearching = false;
         db.notepad
             .toArray()
             .then((notepads) => {
-                filtered = notepads;
+                notepads = notepads.sort((a, b) => b.modifiedOn - a.modifiedOn);
+                if (query) {
+                    filtered = notepads.filter(
+                        (c) =>
+                            c.name
+                                .toLowerCase()
+                                .includes(query.toLowerCase()) ||
+                            new Date(c.modifiedOn)
+                                .toLocaleString()
+                                .includes(query) ||
+                            new Date(c.createdOn)
+                                .toLocaleString()
+                                .includes(query),
+                    );
+                } else filtered = notepads;
                 doneSearching = true;
                 commandEl.focus();
             })
             .catch((_) => (doneSearching = true));
     }
+
+    $: if ($showFileHunter) {
+        refreshList();
+    }
+
+    let isConfirming: Record<string, any> = {};
+    const handleDelete = (e: any, id: string) => {
+        e.preventDefault();
+        if (!isConfirming[id]) {
+            isConfirming[id] = true;
+            setTimeout(() => {
+                delete isConfirming[id];
+                isConfirming = isConfirming;
+            }, 2000);
+        } else {
+            db.notepad.delete(id);
+            recentsRefresher.broadcast.postMessage(true);
+            recentsRefresher.set(id);
+            refreshList();
+            if ($page.params.id == id) goto("/"); // If its the current notepad, close it.
+        }
+    };
 </script>
 
 {#if $showFileHunter}
@@ -122,7 +134,7 @@
                 type="text"
                 bind:this={commandEl}
                 bind:value={query}
-                on:input={handleQuery}
+                on:input={() => refreshList(query)}
                 on:keydown={disableQueryHandlingIfRequired}
                 class="w-full p-2 rounded outline-none text-black border-zinc-800"
                 placeholder="Search for notepads..."
@@ -132,27 +144,40 @@
                     class="select-none overflow-scroll max-h-[80vh] space-y-2"
                     class:pt-2={filtered.length}
                 >
-                    {#each filtered as notepad, i}
+                    {#each filtered as each, i}
                         <a
                             id={`notepad#${i}`}
-                            href={`/notepad/${notepad.id}`}
+                            href={`/notepad/${each.id}`}
                             target="_blank"
                             class:text-black={i == selectedNotepadIndex}
                             class:bg-white={i == selectedNotepadIndex}
                             class=" hover:bg-white outline-none hover:text-black rounded cursor-pointer p-2 flex flex-col items-start"
                         >
-                            <span>{notepad.name}</span>
+                            <span>{each.name}</span>
                             <div class="flex flex-col opacity-50 text-xs">
                                 <span
                                     >Last Modified: {new Date(
-                                        notepad.modifiedOn,
+                                        each.modifiedOn,
                                     ).toLocaleString()}
                                 </span>
                                 <span
                                     >Created: {new Date(
-                                        notepad.createdOn,
+                                        each.createdOn,
                                     ).toLocaleString()}
                                 </span>
+                            </div>
+                            <div class="flex flex-row space-x-2 pt-2">
+                                <button
+                                    on:click|stopPropagation={(e: any) =>
+                                        handleDelete(e, each.id)}
+                                    class="text-xs text-red-500"
+                                >
+                                    {#if isConfirming[each.id]}
+                                        Tap to confirm deletion
+                                    {:else}
+                                        <div class="">Delete</div>
+                                    {/if}
+                                </button>
                             </div>
                         </a>
                     {/each}

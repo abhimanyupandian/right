@@ -1,8 +1,9 @@
 import Dexie, { type EntityTable } from 'dexie';
-import { currentNotepad } from './stores';
+import { currentNotepad, recentsRefresher } from './stores';
 import { Defaults, Symbols, Tags } from './constants';
 import { get } from 'svelte/store';
 import type { TagType } from './types';
+import uuid from 'short-uuid';
 
 interface Note {
     noteId: string,
@@ -60,7 +61,7 @@ export class Saver {
         if (firstLine?.startsWith("@title")) {
             var title = Saver.getTagValue(firstLine, "title").substring(0, 100);
         } else var title = Defaults.notepadName;
-        
+
         if (title) currentNotepad_.name = title;
         else currentNotepad_.name = Defaults.notepadName;
 
@@ -70,6 +71,8 @@ export class Saver {
             .modify((_, ref) => {
                 ref.value = currentNotepad_;
             });
+
+        recentsRefresher.broadcast.postMessage(true);
     }
 
 

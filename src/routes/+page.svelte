@@ -1,19 +1,17 @@
 <script lang="ts">
+	import Delete from "$lib/icons/Delete.svelte";
 	import New from "$lib/icons/New.svelte";
 	import { getNewNotepadMetdata } from "$lib/utils/constants";
 	import { db, type Notepad } from "$lib/utils/db";
-	import { showFileHunter } from "$lib/utils/stores";
+	import { recentsRefresher, showFileHunter } from "$lib/utils/stores";
 	import { onMount } from "svelte";
 
 	var savedNotepads: Notepad[] = [];
 
-	onMount(() => {
-		getSavedNotepads().then((v) => (savedNotepads = v));
-	});
-
 	function onNewNotepad() {
 		var metadata = getNewNotepadMetdata();
 		db.notepad.add(metadata);
+		refreshRecents();
 		window.open(`/notepad/${metadata.id}`, "_blank");
 	}
 
@@ -24,9 +22,34 @@
 		return notepads;
 	}
 
+	function refreshRecents() {
+		getSavedNotepads().then((v) => (savedNotepads = v));
+	}
+
 	function onShowMore() {
 		$showFileHunter = true;
 	}
+
+	onMount(() => {
+		recentsRefresher.broadcast.onmessage = refreshRecents;
+		recentsRefresher.subscribe(refreshRecents);
+	});
+
+	let isConfirming: Record<string, any> = {};
+	let hoveringOver: string = "";
+
+	const handleDelete = (id: string) => {
+		if (!isConfirming[id]) {
+			isConfirming[id] = true;
+			setTimeout(() => {
+				delete isConfirming[id];
+				isConfirming = isConfirming;
+			}, 2000);
+		} else {
+			db.notepad.delete(id);
+			refreshRecents();
+		}
+	};
 </script>
 
 <div
@@ -68,21 +91,40 @@
 				</div>
 			</div>
 			<div class="h-2"></div>
-			<div class="text-xl opacity-25 select-none">Recents</div>
 			<div class="">
+				<div class="text-xl opacity-25 select-none">Recents</div>
 				{#if savedNotepads}
 					{#each savedNotepads as each (each.id)}
-						<div class="flex flex-row space-x-4 items-center">
+						<!-- svelte-ignore a11y_no_static_element_interactions -->
+						<div
+							on:mouseenter={() => (hoveringOver = each.id)}
+							on:mouseleave={() => (hoveringOver = "")}
+							class="flex flex-row space-x-4 items-center"
+						>
 							<a
 								href={`/notepad/${each.id}`}
 								target="_blank"
-								class=" text-blue-500 rounded-sm cursor-pointer"
+								class=" text-blue-500 rounded-sm cursor-pointer text-wrap whitespace-break-spaces"
 							>
 								{each.name}
 							</a>
 							<span class="text-xs opacity-30">
 								{new Date(each.modifiedOn).toLocaleString()}
 							</span>
+							{#if hoveringOver == each.id}
+								<button
+									on:click={() => handleDelete(each.id)}
+									class="text-xs text-red-500"
+								>
+									{#if isConfirming[each.id]}
+										Tap to confirm deletion
+									{:else}
+										<div class="w-4 h-4">
+											<Delete></Delete>
+										</div>
+									{/if}
+								</button>
+							{/if}
 						</div>
 					{/each}
 					{#if savedNotepads.length > 2}

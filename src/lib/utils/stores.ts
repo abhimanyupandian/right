@@ -2,6 +2,18 @@ import { writable } from "svelte/store";
 import { type IndexEntry, type Stats } from "./types";
 import { type Notepad } from "./db";
 
+function createSessionState(label: string) {
+    const { subscribe, set, update } = writable<string>("");
+    return {
+        subscribe,
+        set,
+        update,
+        broadcast: new BroadcastChannel(label)
+    }
+}
+
+export const recentsRefresher = createSessionState('recentsRefresher');
+
 export const showFileHunter = writable<boolean>(false);
 export const currentNotepad = writable<Notepad>();
 export const index = writable<IndexEntry[]>([]);
