@@ -1,4 +1,5 @@
 <script lang="ts">
+	import New from "$lib/icons/New.svelte";
 	import { getNewNotepadMetdata } from "$lib/utils/constants";
 	import { db, type Notepad } from "$lib/utils/db";
 	import { showFileHunter } from "$lib/utils/stores";
@@ -55,12 +56,15 @@
 			<div class="text-xl opacity-25 select-none">Start</div>
 			<!-- svelte-ignore a11y_click_events_have_key_events -->
 			<!-- svelte-ignore a11y_no_static_element_interactions -->
-			<div class="flex flex-row justify-start space-x-1 items-center">
+			<div class="flex flex-row justify-start space-x-2 items-center">
+				<div>
+					<New></New>
+				</div>
 				<div
 					on:click={onNewNotepad}
 					class=" text-blue-500 rounded-sm cursor-pointer"
 				>
-					{`New`}
+					{`New Notepad`}
 				</div>
 			</div>
 			<div class="h-2"></div>
