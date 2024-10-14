@@ -15,7 +15,6 @@
     var doneSearching: boolean = true;
 
     $: if (commandEl) {
-        console.log(">>>")
         query = "";
         filtered = [];
         selectedNotepadIndex = -1;

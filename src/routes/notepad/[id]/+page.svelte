@@ -72,7 +72,9 @@
         });
     }
 
+    var loadingDone: boolean = false;
     onMount(() => {
+        loadingDone = false;
         onOpenNotepad();
     });
 
@@ -85,23 +87,30 @@
     function onOpenNotepad() {
         db.notepad.get($page.params.id).then((notepad) => {
             if (notepad) $currentNotepad = notepad;
+            loadingDone = true;
         });
     }
 </script>
 
 {#if !$currentNotepad}
-    <div
-        class="font flex flex-row min-h-screen justify-center items-center select-none"
-    >
-        <div class="flex flex-row space-x-4 text-3xl opacity-20 items-center">
-            <div class="flex flex-col items-end">
-                <div>Not</div>
-                <div>Found</div>
+    {#if loadingDone}
+        <div
+            class="font flex flex-row min-h-screen justify-center items-center select-none"
+        >
+            <div
+                class="flex flex-row space-x-4 text-3xl opacity-20 items-center"
+            >
+                <div class="flex flex-col items-end">
+                    <div>Not</div>
+                    <div>Found</div>
+                </div>
+                <div class="h-20 w-[0.05em] bg-white"></div>
+                <div class="">404</div>
             </div>
-            <div class="h-20 w-[0.05em] bg-white"></div>
-            <div class="">404</div>
         </div>
-    </div>
+    {:else}
+        <div id="screen"></div>
+    {/if}
 {:else}
     <div class:pt-8={IS_DESKTOP} class="flex flex-col h-[100vh] relative">
         <status
