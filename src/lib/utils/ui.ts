@@ -1,6 +1,6 @@
 import { get } from "svelte/store";
 import { Symbols } from "./constants";
-import { index } from "./stores";
+import { currentNotepad, index } from "./stores";
 
 export function getCaretCoordinates(textArea: any) {
     const div = document.createElement("div");
@@ -47,10 +47,9 @@ export function getCaretCoordinates(textArea: any) {
     };
 }
 
-function scrollTo(target: any, to: number) {
-    const textVal = target.value;
+function scrollTo(target: any, to: number, content: string) {
     const div = document.createElement("div");
-    div.innerText = textVal.slice(0, to);
+    div.innerText = content.slice(0, to);
     document.body.appendChild(div);
     div.style.width = `${target.clientWidth}px`;
     var offsetHeight = div.clientHeight;
@@ -83,11 +82,12 @@ function smoothScroll(target: any, to: number, duration: number) {
 
 export function scrollToLine(line: number) {
     var editor = document.getElementById("editor") as any;
-    const lineArr = editor.value.split(Symbols.EOL, line + 1);
+    var content = get(currentNotepad).content;
+    const lineArr = content.split(Symbols.EOL, line + 1);
     const arrJoin = lineArr.join(Symbols.EOL);
     const from = arrJoin.length - lineArr[line].length;
     const to = arrJoin.length;
-    scrollTo(editor, to);
+    scrollTo(editor, to, content);
 
     var selection = get(index)[line]
     var cursorPosition = selection.index ?? -1;

@@ -51,7 +51,7 @@
         target.addEventListener("selectionchange", (event: any) => {
             var target = event.target as any;
             syncIndexWithCursor(target);
-            var value = target.value;
+            var value = target.innerText;
             $selection.content = value.substring(
                 target.selectionStart,
                 target.selectionEnd,

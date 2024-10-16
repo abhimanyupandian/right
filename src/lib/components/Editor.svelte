@@ -2,9 +2,18 @@
 	import { Saver } from "$lib/utils/db";
 	import { Progress } from "$lib/utils/progress";
 	import { currentNotepad } from "$lib/utils/stores";
+	import uuid from "short-uuid";
 	import { onMount } from "svelte";
 
 	export let editorEl: HTMLElement;
+
+	const listeners: any = {};
+
+	var setupDone: boolean = false;
+	$: if (editorEl && !setupDone) {
+		editorEl.innerHTML = $currentNotepad.raw;
+		setupDone = true;
+	}
 
 	onMount(() => {
 		Progress.track();
@@ -14,16 +23,103 @@
 				Saver.save();
 			}
 		});
+		var observer = new MutationObserver(function (mutations) {
+			mutations.forEach(function (mutation: any) {
+				var message: {
+					event: string;
+					element: HTMLElement;
+					old?: HTMLElement;
+				};
+				switch (mutation.type) {
+					// case "characterData":
+					// 	message = {
+					// 		event:
+					// 			"Character data changed from '" +
+					// 			mutation.oldValue +
+					// 			"' to '" +
+					// 			mutation.target.data +
+					// 			"'",
+					// 		element: mutation.target,
+					// 	};
+					// 	break;
+					// case "attributes":
+					// 	message = {
+					// 		event:
+					// 			"Attribute '" +
+					// 			mutation.attributeName +
+					// 			"' changed from '" +
+					// 			mutation.oldValue +
+					// 			"' to '" +
+					// 			mutation.target.getAttribute(
+					// 				mutation.attributeName,
+					// 			) +
+					// 			"'",
+					// 		element: mutation.target,
+					// 	};
+					// 	break;
+					case "childList":
+						message = { event: "ADD", element: mutation.target };
+						// console.log(mutation.removedNodes)
+						if (mutation.removedNodes) {
+							// console.log("Removed", mutation.removedNodes)
+							for (const node of mutation.removedNodes) {
+								console.log(node)
+								if (listeners[node.__id__]) {
+									delete listeners[node.__id__];
+								}
+							}
+						}
+						if (mutation.addedNodes) {
+							// console.log("Added", mutation.addedNodes);
+							// let node = mutation.addedNodes[0];
+							for (const node of mutation.addedNodes) {
+								let allowed = ["DIV", "SPAN"].includes(node.tagName);
+								if (true) {
+									node.__id__ = uuid.generate();
+									listeners[node.__id__] = {
+										handler: () => {
+											console.log(node);
+										},
+										type: node.tagName,
+										id: node.__id__,
+										node,
+									};
+								}
+							}
+						}
+						console.log(Object.keys(listeners).length);
+						break;
+				}
+				// console.log(message!);
+			});
+		});
+
+		// pass in the target node, as well as the observer options
+		observer.observe(editorEl, {
+			subtree: true,
+			attributes: true,
+			childList: true,
+			characterData: true,
+			characterDataOldValue: true,
+		});
 	});
+
+	function onInput(_: any) {
+		Saver.save({ delay: 2 * 1000 });
+		// $currentNotepad.content = editorEl.innerText;
+	}
 </script>
 
 <div class="flex min-w-[640px] max-w-[640px]">
-	<textarea
+	<div
+		contenteditable
 		id="editor"
-		on:input={() => Saver.save({ delay: 2 * 1000 })}
+		on:input={onInput}
+		on:dblclick={() => console.log(listeners)}
 		bind:this={editorEl}
-		bind:value={$currentNotepad.content}
-	></textarea>
+		bind:innerText={$currentNotepad.content}
+		bind:innerHTML={$currentNotepad.raw}
+	></div>
 </div>
 
 <style>

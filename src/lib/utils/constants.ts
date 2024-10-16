@@ -59,12 +59,13 @@ export const PageContent = ``
 export function getNewNotepadMetdata() {
     return {
         id: uuid.generate(),
-        content: `@title ${Defaults.notepadName}`,
+        content: ``,
         createdOn: Date.now(),
         modifiedOn: Date.now(),
         tags: [],
         name: Defaults.notepadName,
         notes: [],
-        author: ""
+        author: "",
+        raw: ``
     }
 }

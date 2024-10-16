@@ -17,6 +17,7 @@ interface Note {
 interface Notepad {
     id: string;
     name: string;
+    raw: string;
     content: string;
     createdOn: number;
     modifiedOn: number;
