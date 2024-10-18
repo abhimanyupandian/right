@@ -9,6 +9,8 @@
     import Editor from "$lib/components/Editor.svelte";
     import { db } from "$lib/utils/db";
     import { page } from "$app/stores";
+    import Fullscreen from "$lib/icons/Fullscreen.svelte";
+    import FullscreenExit from "$lib/icons/FullscreenExit.svelte";
 
     const IS_DESKTOP = !!(globalThis as any).IS_DESKTOP;
 
@@ -90,6 +92,21 @@
             loadingDone = true;
         });
     }
+    var pageEl: HTMLElement;
+    var isFullscreen: boolean = false;
+
+    function fullscreenchanged(_: any) {
+        isFullscreen = !!document.fullscreenElement;
+    }
+
+    document.addEventListener("fullscreenchange", fullscreenchanged);
+    function toggleFullscreen() {
+        if (pageEl.requestFullscreen && !isFullscreen) {
+            pageEl.requestFullscreen();
+        } else {
+            document.exitFullscreen();
+        }
+    }
 </script>
 
 {#if !$currentNotepad}
@@ -112,19 +129,33 @@
         <div id="screen"></div>
     {/if}
 {:else}
-    <div class:pt-8={IS_DESKTOP} class="flex flex-col h-[100vh] relative">
+    <div
+        id="page"
+        bind:this={pageEl}
+        class:pt-8={IS_DESKTOP}
+        class="flex flex-col h-[100vh] relative"
+    >
         <status
-            class="h-[40px] flex-row w-full min-w-full justify-between items-center flex px-4"
+            class="h-[40px] fixed flex-row w-full min-w-full justify-between items-center flex px-2"
         >
             <div class="max-w-[320px] min-w-[320px]"></div>
             <div
-                class="max-w-[320px] min-w-[320px] flex flex-row justify-between items-center px-4"
+                class="max-w-[320px] min-w-[320px] flex flex-row justify-between items-center"
             >
-                <span> </span>
+                <div></div>
+                <span class="fill-zinc-600">
+                    <button on:click={toggleFullscreen}>
+                        {#if isFullscreen}
+                            <FullscreenExit></FullscreenExit>
+                        {:else}
+                            <Fullscreen></Fullscreen>
+                        {/if}
+                    </button>
+                </span>
             </div>
         </status>
         <div
-            class="flex max-h-[calc(100vh-64px)] min-h-[calc(100vh-64px)] min-w-screen max-w-screen w-screen space-x-2"
+            class="pt-[42px] flex max-h-[calc(100vh-64px)] min-h-[calc(100vh-32px)] min-w-screen max-w-screen w-screen space-x-2"
         >
             <Nav bind:cursorPosition />
             <Editor bind:editorEl />

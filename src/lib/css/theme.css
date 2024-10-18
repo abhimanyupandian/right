@@ -8,6 +8,10 @@ body {
     background: var(--background);
 }
 
+#page {
+    background: var(--background);
+}
+
 textarea {
     color: var(--f_high) !important
 }

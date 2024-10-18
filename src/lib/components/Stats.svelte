@@ -37,28 +37,28 @@
 	<div class="flex flex-row space-x-2 items-center text-xs">
 		<div bind:this={progressEl}></div>
 		<div class="w-10 stats-text">{$stats.percent}%</div>
-	</div>
-	<div id="details" class="flex-row space-x-2 text-xs hidden md:flex">
-		<div class="flex flex-row space-x-2 items-center text-xs stats-text">
-			<div class="flex flex-row space-x-1">
-				<div>{$stats.totalW} W,</div>
-				<div>{$stats.totalC} C</div>
-			</div>
-			{#if $stats.selectedW && $stats.selectedC}
+		<div id="details" class="flex-row space-x-2 text-xs hidden md:flex">
+			<div class="flex flex-row space-x-2 items-center text-xs stats-text">
 				<div class="flex flex-row space-x-1">
-					(
-					<div>{$stats.selectedW} W,</div>
-					<div>{$stats.selectedC} C</div>
-					)
+					<div>{$stats.totalW} W,</div>
+					<div>{$stats.totalC} C</div>
 				</div>
-			{/if}
+				{#if $stats.selectedW && $stats.selectedC}
+					<div class="flex flex-row space-x-1">
+						(
+						<div>{$stats.selectedW} W,</div>
+						<div>{$stats.selectedC} C</div>
+						)
+					</div>
+				{/if}
+			</div>
+			<span class="stats-text">{Symbols.DOT}</span>
+			<span class="stats-text">{$currentNotepad.name}</span>
+			<span class="stats-text">{Symbols.DOT}</span>
+			<span class="stats-text"
+				>Modified {timeAgo.format(new Date(lastSaveTime))}
+			</span>
 		</div>
-		<span class="stats-text">{Symbols.DOT}</span>
-		<span class="stats-text">{$currentNotepad.name}</span>
-		<span class="stats-text">{Symbols.DOT}</span>
-		<span class="stats-text"
-			>Modified {timeAgo.format(new Date(lastSaveTime))}
-		</span>
 	</div>
 	<div class="text-xs flex flex-row items-center justify-between space-x-3">
 		<span class="stats-text">{time}</span>
