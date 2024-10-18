@@ -11,6 +11,7 @@
     import { page } from "$app/stores";
     import Fullscreen from "$lib/icons/Fullscreen.svelte";
     import FullscreenExit from "$lib/icons/FullscreenExit.svelte";
+    import FileHunter from "$lib/components/FileHunter.svelte";
 
     const IS_DESKTOP = !!(globalThis as any).IS_DESKTOP;
 
@@ -135,6 +136,7 @@
         class:pt-8={IS_DESKTOP}
         class="flex flex-col h-[100vh] relative"
     >
+        <FileHunter></FileHunter>
         <status
             class="h-[40px] fixed flex-row w-full min-w-full justify-between items-center flex px-2"
         >

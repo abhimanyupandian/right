@@ -32,7 +32,7 @@
 </script>
 
 <div
-	class="stats h-[32px] px-4 flex flex-row w-[100vw] fixed bottom-0 select-none justify-between items-center min-w-[100vw]"
+	class="stats h-[32px] px-3 flex flex-row w-[100vw] fixed bottom-0 select-none justify-between items-center min-w-[100vw]"
 >
 	<div class="flex flex-row space-x-2 items-center text-xs">
 		<div bind:this={progressEl}></div>

@@ -2,7 +2,7 @@
     import { goto } from "$app/navigation";
     import { page } from "$app/stores";
     import { db, type Notepad } from "$lib/utils/db";
-    import { recentsRefresher, showFileHunter } from "$lib/utils/stores";
+    import { recentsRefresher } from "$lib/utils/stores";
     import { onMount } from "svelte";
 
     var commandEl: HTMLElement;
@@ -13,6 +13,8 @@
     var selectedNotepadIndex: number = -1;
 
     var doneSearching: boolean = true;
+
+    var show: boolean = false;
 
     $: if (commandEl) {
         query = "";
@@ -25,11 +27,11 @@
     function handleKeydown(event: any) {
         if (event.key === "o" && (event.ctrlKey || event.metaKey)) {
             event.preventDefault();
-            $showFileHunter = !$showFileHunter;
+            show = !show;
         }
 
-        if ($showFileHunter) {
-            if (event.key == "Escape") $showFileHunter = false;
+        if (show) {
+            if (event.key == "Escape") show = false;
             else if (event.key === "ArrowDown") {
                 event.preventDefault();
                 if (selectedNotepadIndex < filtered.length - 1) {
@@ -60,8 +62,8 @@
     onMount(() => {
         window.addEventListener("keydown", handleKeydown);
         window.addEventListener("click", function (e) {
-            if ($showFileHunter && overlayEl == e.target) {
-                $showFileHunter = false;
+            if (show && overlayEl == e.target) {
+                show = false;
             }
         });
     });
@@ -116,7 +118,7 @@
     };
 </script>
 
-{#if $showFileHunter}
+{#if show}
     <div
         bind:this={overlayEl}
         class="fixed z-10 opacity-50 bg-black inset-0 justify-center items-center hidden md:flex"

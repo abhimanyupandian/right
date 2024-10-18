@@ -1,12 +1,14 @@
 <script lang="ts">
+    import FileHunter from "$lib/components/FileHunter.svelte";
 	import Delete from "$lib/icons/Delete.svelte";
 	import New from "$lib/icons/New.svelte";
 	import { getNewNotepadMetdata } from "$lib/utils/constants";
 	import { db, type Notepad } from "$lib/utils/db";
-	import { recentsRefresher, showFileHunter } from "$lib/utils/stores";
+	import { recentsRefresher } from "$lib/utils/stores";
 	import { onMount } from "svelte";
 
 	var savedNotepads: Notepad[] = [];
+	var showFileHunter: boolean = false;
 
 	function onNewNotepad() {
 		var metadata = getNewNotepadMetdata();
@@ -28,7 +30,7 @@
 	}
 
 	function onShowMore() {
-		$showFileHunter = true;
+		showFileHunter = true;
 	}
 
 	var loadingDone: boolean = false;
@@ -56,6 +58,7 @@
 	};
 </script>
 
+<FileHunter></FileHunter>
 {#if loadingDone}
 	<div
 		class="select-none flex max-h-[calc(100vh-64px)] min-h-[calc(100vh-64px)] min-w-screen max-w-screen w-screen space-x-2"
