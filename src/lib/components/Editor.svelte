@@ -5,6 +5,7 @@
 	import { onMount } from "svelte";
 
 	export let editorEl: HTMLElement;
+	export let isChatting: boolean = false;
 
 	onMount(() => {
 		Progress.track();
@@ -17,14 +18,16 @@
 	});
 </script>
 
-<div class="flex min-w-[640px] max-w-[640px]">
-	<textarea
-		id="editor"
-		on:input={() => Saver.save({ delay: 2 * 1000 })}
-		bind:this={editorEl}
-		bind:value={$currentNotepad.content}
-	></textarea>
-</div>
+{#if !isChatting}
+	<div class="flex min-w-[640px] max-w-[640px]">
+		<textarea
+			id="editor"
+			on:input={() => Saver.save({ delay: 2 * 1000 })}
+			bind:this={editorEl}
+			bind:value={$currentNotepad.content}
+		></textarea>
+	</div>
+{/if}
 
 <style>
 	#editor {

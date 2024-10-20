@@ -3,7 +3,13 @@
     import { getCaretCoordinates } from "$lib/utils/ui";
     import { Symbols } from "$lib/utils/constants";
     import { Progress } from "$lib/utils/progress";
-    import { currentNotepad, index, selection, stats } from "$lib/utils/stores";
+    import {
+        currentNotepad,
+        index,
+        selection,
+        selectionTracker,
+        stats,
+    } from "$lib/utils/stores";
     import Stats from "$lib/components/Stats.svelte";
     import Nav from "$lib/components/Nav.svelte";
     import Editor from "$lib/components/Editor.svelte";
@@ -12,6 +18,8 @@
     import Fullscreen from "$lib/icons/Fullscreen.svelte";
     import FullscreenExit from "$lib/icons/FullscreenExit.svelte";
     import FileHunter from "$lib/components/FileHunter.svelte";
+    import { get } from "svelte/store";
+    import ContextViewer from "$lib/components/ContextViewer.svelte";
 
     const IS_DESKTOP = !!(globalThis as any).IS_DESKTOP;
 
@@ -21,7 +29,45 @@
     var editorEl: any;
     var progressEl: any;
 
+    var isChatting = false;
     var setupDone: boolean = false;
+
+    function openChat() {
+        if ($selection.content.trim().length <= 1) return;
+        isChatting = true;
+        saveSelection(editorEl);
+    }
+
+    function restoreSelection(target: any) {
+        if (!target) return;
+        target.setSelectionRange(
+            $selectionTracker.range.start,
+            $selectionTracker.range.end,
+        );
+        target.scrollTo({
+            top: $selectionTracker.scrollTop,
+            behavior: "instant",
+        });
+        target.focus();
+    }
+
+    function closeChat() {
+        if (!isChatting) return;
+        isChatting = false;
+    }
+
+    function saveSelection(target: any) {
+        if (!target) return;
+        $selectionTracker = {
+            range: {
+                start: target.selectionStart,
+                end: target.selectionEnd,
+            },
+            content: get(selection).content,
+            scrollTop: target.scrollTop,
+            clientHeight: target.clientHeight,
+        };
+    }
 
     function syncIndexWithCursor(target: any) {
         var textUntilCursor = target.value.substring(
@@ -45,6 +91,13 @@
         if (!target) return;
         target.addEventListener("scroll", () => {
             updateProgress(target);
+        });
+
+        editorEl.addEventListener("keydown", function (event: any) {
+            if (event.metaKey && event.key === "/") {
+                event.preventDefault();
+                openChat();
+            } else if (event.key === "Escape") closeChat();
         });
 
         target.addEventListener("contextmenu", (event: any) => {
@@ -85,6 +138,12 @@
         Progress.init(progressEl);
         initListeners(editorEl);
         setupDone = true;
+    }
+
+    // Whenever chat is closed
+    $: if (!isChatting && editorEl) {
+        restoreSelection(editorEl);
+        initListeners(editorEl);
     }
 
     function onOpenNotepad() {
@@ -164,7 +223,8 @@
             class="pt-[42px] flex max-h-[calc(100vh-64px)] min-h-[calc(100vh-32px)] min-w-screen max-w-screen w-screen space-x-2"
         >
             <Nav bind:cursorPosition />
-            <Editor bind:editorEl />
+            <ContextViewer bind:isChatting></ContextViewer>
+            <Editor bind:editorEl bind:isChatting />
         </div>
 
         <Stats bind:progressEl />

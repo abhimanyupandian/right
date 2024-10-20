@@ -32,3 +32,11 @@ export const selection = writable<{ before: string; content: string; after: stri
     after: "",
     content: "",
 });
+export const selectionTracker = writable<{ range: { start: number; end: number }, content: string, scrollTop: number, clientHeight: number, }>(
+    {
+        range: { start: 0, end: 0 },
+        content: "",
+        scrollTop: 0,
+        clientHeight: 0
+    }
+);
