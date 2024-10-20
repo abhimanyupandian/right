@@ -1,14 +1,17 @@
 <script lang="ts">
-    import FileHunter from "$lib/components/FileHunter.svelte";
+	import FileHunter from "$lib/components/FileHunter.svelte";
 	import Delete from "$lib/icons/Delete.svelte";
 	import New from "$lib/icons/New.svelte";
 	import { getNewNotepadMetdata } from "$lib/utils/constants";
 	import { db, type Notepad } from "$lib/utils/db";
 	import { recentsRefresher } from "$lib/utils/stores";
 	import { onMount } from "svelte";
+	import Wand from "$lib/icons/Wand.svelte";
+	import ArthurSettings from "$lib/components/ArthurSettings.svelte";
 
 	var savedNotepads: Notepad[] = [];
 	var showFileHunter: boolean = false;
+	var showArthurSettings: boolean = false;
 
 	function onNewNotepad() {
 		var metadata = getNewNotepadMetdata();
@@ -58,7 +61,8 @@
 	};
 </script>
 
-<FileHunter></FileHunter>
+<ArthurSettings bind:show={showArthurSettings}></ArthurSettings>
+<FileHunter bind:show={showFileHunter}></FileHunter>
 {#if loadingDone}
 	<div
 		class="select-none flex max-h-[calc(100vh-64px)] min-h-[calc(100vh-64px)] min-w-screen max-w-screen w-screen space-x-2"
@@ -66,7 +70,8 @@
 		<div
 			class="max-w-[320px] min-w-[320px] flex-0 px-4 max-h-[calc(100vh-72px)] pb-24"
 		></div>
-		<div class="flex flex-col justify-center items-start">
+		<div class="flex flex-col justify-center items-start space-y-4">
+			<!-- Start Section -->
 			<div class="flex flex-row justify-center items-center space-x-4">
 				<div>
 					<img
@@ -84,7 +89,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="h-4"></div>
+			<!-- Recents Section -->
 			<div class="flex flex-col space-y-1">
 				<div class="text-xl opacity-25 select-none">Start</div>
 				<!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -111,7 +116,7 @@
 							<div
 								on:mouseenter={() => (hoveringOver = each.id)}
 								on:mouseleave={() => (hoveringOver = "")}
-								class="flex flex-row space-x-4 items-center"
+								class="flex flex-row space-x-2 items-center"
 							>
 								<a
 									href={`/notepad/${each.id}`}
@@ -150,6 +155,22 @@
 							</div>
 						{/if}
 					{/if}
+				</div>
+			</div>
+			<div class="flex flex-col space-y-1">
+				<div class="text-xl opacity-25 select-none">Arthur AI</div>
+				<!-- svelte-ignore a11y_click_events_have_key_events -->
+				<!-- svelte-ignore a11y_no_static_element_interactions -->
+				<div class="flex flex-row justify-start space-x-2 items-center">
+					<div class="stroke-blue-500">
+						<Wand></Wand>
+					</div>
+					<div
+						on:click={() => (showArthurSettings = true)}
+						class=" text-blue-500 rounded-sm cursor-pointer"
+					>
+						{`Settings`}
+					</div>
 				</div>
 			</div>
 		</div>

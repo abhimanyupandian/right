@@ -14,7 +14,7 @@
 
     var doneSearching: boolean = true;
 
-    var show: boolean = false;
+    export var show: boolean = false;
 
     $: if (commandEl) {
         query = "";

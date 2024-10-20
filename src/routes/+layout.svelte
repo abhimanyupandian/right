@@ -2,10 +2,11 @@
 	import { onMount } from "svelte";
 	import "../app.css";
 	import { Theme } from "$lib/utils/theme";
-	import FileHunter from "$lib/components/FileHunter.svelte";
-	
+	import { Arthur } from "$lib/utils/arthur";
+
 	onMount(() => {
 		Theme.install();
+		Arthur.restore();
 	});
 </script>
 

@@ -48,6 +48,7 @@
 	"keywords": [],
 	"license": "MIT",
 	"dependencies": {
+		"@mlc-ai/web-llm": "^0.2.73",
 		"@svelte-plugins/tooltips": "^3.0.1",
 		"@types/javascript-time-ago": "^2.0.8",
 		"dexie": "^4.0.8",

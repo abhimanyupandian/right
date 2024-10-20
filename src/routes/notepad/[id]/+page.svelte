@@ -145,15 +145,19 @@
                 class="max-w-[320px] min-w-[320px] flex flex-row justify-between items-center"
             >
                 <div></div>
-                <span class="fill-zinc-600">
-                    <button on:click={toggleFullscreen}>
-                        {#if isFullscreen}
-                            <FullscreenExit></FullscreenExit>
-                        {:else}
-                            <Fullscreen></Fullscreen>
-                        {/if}
-                    </button>
-                </span>
+                <div
+                    class="flex flex-row space-x-2 items-center justify-center"
+                >
+                    <span class="fill-zinc-500 opacity-30 hover:opacity-100">
+                        <button on:click={toggleFullscreen}>
+                            {#if isFullscreen}
+                                <FullscreenExit></FullscreenExit>
+                            {:else}
+                                <Fullscreen></Fullscreen>
+                            {/if}
+                        </button>
+                    </span>
+                </div>
             </div>
         </status>
         <div

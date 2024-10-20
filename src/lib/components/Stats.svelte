@@ -5,8 +5,11 @@
 	import { onMount } from "svelte";
 	import { get } from "svelte/store";
 	import en from "javascript-time-ago/locale/en";
+	import { arthur } from "$lib/utils/arthur";
 
 	export let progressEl: any;
+
+	let showArthurStatus: boolean = false;
 
 	TimeAgo.addLocale(en);
 	const timeAgo = new TimeAgo("en-US");
@@ -38,7 +41,9 @@
 		<div bind:this={progressEl}></div>
 		<div class="w-10 stats-text">{$stats.percent}%</div>
 		<div id="details" class="flex-row space-x-2 text-xs hidden md:flex">
-			<div class="flex flex-row space-x-2 items-center text-xs stats-text">
+			<div
+				class="flex flex-row space-x-2 items-center text-xs stats-text"
+			>
 				<div class="flex flex-row space-x-1">
 					<div>{$stats.totalW} W,</div>
 					<div>{$stats.totalC} C</div>
@@ -60,8 +65,37 @@
 			</span>
 		</div>
 	</div>
-	<div class="text-xs flex flex-row items-center justify-between space-x-3">
+	<div class="text-xs flex flex-row justify-between items-start space-x-3">
 		<span class="stats-text">{time}</span>
+		{#if showArthurStatus}
+			<tooltip
+				class="fixed right-1 bottom-[32px] bg-black text-white h-4 text-md p-1 flex flex-col items-center justify-center"
+			>
+				<div>
+					Arthur {$arthur.state === "loading"
+						? "Loading..."
+						: $arthur.state
+							? "Ready!"
+							: "Unavailable"}
+				</div>
+			</tooltip>
+		{/if}
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div
+			on:mouseenter={() => (showArthurStatus = true)}
+			on:mouseleave={() => (showArthurStatus = false)}
+			class="opacity-50 hover:opacity-100"
+		>
+			{#if $arthur.state === "loading"}
+				<div class="w-3 h-3 rounded-full bg-[orange]"></div>
+			{:else}
+				<div
+					class:bg-green-500={$arthur.state}
+					class:bg-red-500={!$arthur.state}
+					class="w-3 h-3 rounded-full"
+				></div>
+			{/if}
+		</div>
 	</div>
 </div>
 

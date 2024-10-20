@@ -10,7 +10,7 @@ const config = {
 	kit: {
 		csp: {
 			directives: {
-				'script-src': ['self']
+				'script-src': ['self', 'wasm-unsafe-eval']
 			},
 		},
 
