@@ -5,14 +5,6 @@ import { vitePreprocess } from '@sveltejs/vite-plugin-svelte'
 const config = {
 	preprocess: vitePreprocess(),
 	kit: {
-		csp: {
-			directives: {
-				'script-src': ['self', 'wasm-unsafe-eval']
-			},
-		},
-		paths: {
-			relative: false,
-		},
 		adapter: adapter({
 			fallback: 'index.html',
 			pages: 'docs',
