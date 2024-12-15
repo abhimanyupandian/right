@@ -1,5 +1,6 @@
 import { CreateMLCEngine, MLCEngine, type ChatCompletionMessageParam, type InitProgressReport } from "@mlc-ai/web-llm";
 import { get, writable } from "svelte/store";
+import { ARTHUR_ENABLED } from "./constants";
 
 export let arthur = writable<{ state: boolean | 'loading', engine?: MLCEngine, model?: string }>({ state: false });
 export let arthurInitProgress = writable<string>("");
@@ -33,7 +34,7 @@ ${query}
 `
             },
         ]
-        console.log(messages)
+        // console.log(messages)
         // Chunks is an AsyncGenerator object
         const chunks = await get(arthur).engine!.chat.completions.create({
             messages,
@@ -86,6 +87,7 @@ ${query}
     }
 
     static async restore() {
+        if (!ARTHUR_ENABLED) return;
         const model = get(currentModel);
         if (!model) return;
 

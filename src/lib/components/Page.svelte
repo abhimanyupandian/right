@@ -23,7 +23,7 @@
     import { arthur } from "$lib/utils/arthur";
     import Arthur from "$lib/components/Arthur.svelte";
 
-    const IS_DESKTOP = !!(globalThis as any).IS_DESKTOP;
+    export let notepadId: string | undefined = undefined;
 
     const pos: { x: number; y: number } = { x: 0, y: 0 };
     var cursorPosition: number = -1;
@@ -152,10 +152,12 @@
     }
 
     function onOpenNotepad() {
-        db.notepad.get($page.params.id).then((notepad) => {
-            if (notepad) $currentNotepad = notepad;
-            loadingDone = true;
-        });
+        db.notepad
+            .get(notepadId ?? $page.url.searchParams.get("id") ?? "")
+            .then((notepad) => {
+                if (notepad) $currentNotepad = notepad;
+                loadingDone = true;
+            });
     }
     var pageEl: HTMLElement;
     var isFullscreen: boolean = false;

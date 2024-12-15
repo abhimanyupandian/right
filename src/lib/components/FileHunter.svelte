@@ -113,7 +113,7 @@
             recentsRefresher.broadcast.postMessage(true);
             recentsRefresher.set(id);
             refreshList();
-            if ($page.params.id == id) goto("/"); // If its the current notepad, close it.
+            if ($page.url.searchParams.get("id") == id) goto("/"); // If its the current notepad, close it.
         }
     };
 </script>
@@ -146,7 +146,7 @@
                     {#each filtered as each, i}
                         <a
                             id={`notepad#${i}`}
-                            href={`/notepad/${each.id}`}
+                            href={`/?id=${each.id}`}
                             target="_blank"
                             class:text-black={i == selectedNotepadIndex}
                             class:bg-white={i == selectedNotepadIndex}
