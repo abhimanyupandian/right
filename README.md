@@ -7,4 +7,4 @@
 <hr/>
 
 <h4>Attributions</h4>
-<span>UI/UX Heavily inspired from [Left](https://github.com/hundredrabbits/Left).</span>
+<span>UI/UX design influenced by Left - https://github.com/hundredrabbits/Left</span>
