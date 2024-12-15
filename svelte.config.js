@@ -15,8 +15,8 @@ const config = {
 		},
 		adapter: adapter({
 			fallback: 'index.html',
-			pages: '.vite/renderer/main_window',
-			assets: '.vite/renderer/main_window',
+			pages: 'build',
+			assets: 'build',
 		})
 	}
 };
