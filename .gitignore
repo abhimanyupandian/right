@@ -95,7 +95,7 @@ out/
 .output
 .vercel
 /.svelte-kit
-# /build
+/build
 
 # OS
 .DS_Store

@@ -15,8 +15,8 @@ const config = {
 		},
 		adapter: adapter({
 			fallback: 'index.html',
-			pages: 'build',
-			assets: 'build',
+			pages: 'docs',
+			assets: 'docs',
 		})
 	}
 };
