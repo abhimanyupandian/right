@@ -1,24 +1,31 @@
 import { writable } from "svelte/store";
-import { type ModelDetails, type IndexEntry, type Stats } from "./types";
-import { PageContent } from "./constants";
+import { type IndexEntry, type Stats } from "./types";
+import { type Notepad } from "./db";
 
-export const currentModel = writable<string>(localStorage.getItem("currentModel") ?? "");
-currentModel.subscribe(value => {
-    localStorage.setItem("currentModel", value);
-});
-export const availableModels = writable<ModelDetails[]>(JSON.parse(localStorage.getItem("availableModels") ?? "[]"));
-availableModels.subscribe(value => {
-    localStorage.setItem("availableModels", JSON.stringify(value));
-});
-export const arthurReady = writable<boolean>(false);
-export const content = writable<string>(PageContent);
+function createSessionState(label: string) {
+    const { subscribe, set, update } = writable<string>("");
+    return {
+        subscribe,
+        set,
+        update,
+        broadcast: new BroadcastChannel(label)
+    }
+}
+
+export const recentsRefresher = createSessionState('recentsRefresher');
+
+export const currentNotepad = writable<Notepad>();
 export const index = writable<IndexEntry[]>([]);
 export const stats = writable<Stats>({
     percent: "0.0",
     totalC: 0,
     totalW: 0,
+    absC: 0,
+    absW: 0,
     selectedC: 0,
-    selectedW: 0
+    selectedW: 0,
+    totalL: 0,
+    selectedL: 0
 });
 export const selection = writable<{ before: string; content: string; after: string }>({
     before: "",

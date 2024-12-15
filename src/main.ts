@@ -2,7 +2,6 @@ import { app, BrowserWindow, ipcMain, protocol, net } from 'electron';
 import path from 'path';
 import url from 'url';
 import { stat } from 'node:fs/promises';
-import nodeChildProcess from 'child_process';
 
 import 'dotenv/config';
 
@@ -57,52 +56,12 @@ app.on('ready', () => {
 
 		const responseFilePath = await isFile(path.join(srcFolder, requestPath))
 			?? await isFile(path.join(srcFolder, path.dirname(requestPath), `${path.basename(requestPath) || 'index'}.html`))
-			?? path.join(srcFolder, '200.html');
+			?? path.join(srcFolder, 'index.html');
 		return await net.fetch(url.pathToFileURL(responseFilePath).toString());
 	});
 });
 
 var mainWindow: BrowserWindow;
-var authurId: number | undefined;
-var ollama: nodeChildProcess.ChildProcessWithoutNullStreams | null;
-
-function shutdown() {
-	if (ollama) {
-		ollama.kill('SIGINT');
-		ollama = null;
-	}
-}
-
-function wakeUpArthur() {
-	if (!authurId) {
-		ollama = nodeChildProcess.spawn(
-			path.join(ollamaPath, 'ollama'),
-			['serve'],
-			{ env: { ...process.env, OLLAMA_HOST: process.env.PUBLIC_OLLAMA_HOST }, detached: false },
-		);
-		authurId = ollama.pid;
-		ollama.stdout.on('data', (data) => {
-			console.log('stdout: ' + data);
-			if (mainWindow.isDestroyed()) return;
-			mainWindow.webContents.send('arthur-says', { event: 'stdout', message: data })
-		});
-
-		ollama.stderr.on('data', (err) => {
-			console.log('stderr: ' + err);
-			if (mainWindow.isDestroyed()) return;
-			mainWindow.webContents.send('arthur-says', { event: 'stderr', message: err })
-		});
-
-		ollama.on('exit', (code) => {
-			if (mainWindow.isDestroyed()) return;
-			mainWindow.webContents.send('arthur-says', { event: 'exit', message: code })
-		});
-	}
-	console.log('Arthur ID: ' + authurId);
-	mainWindow.webContents.send('arthur-says', { event: 'id', message: authurId })
-
-}
-
 
 function createWindow() {
 	// Create the browser window.
@@ -132,11 +91,6 @@ function createWindow() {
 	mainWindow.maximize();
 }
 
-// Cleaning up the ollama process before exit
-process.on('SIGINT', shutdown);
-process.on('SIGTERM', shutdown);
-app.on('before-quit', shutdown);
-
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -159,13 +113,4 @@ app.on('activate', () => {
 	if (BrowserWindow.getAllWindows().length === 0) {
 		createWindow();
 	}
-});
-
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and import them here.
-ipcMain.on('toggleDevTools', (event) => {
-	event.sender.toggleDevTools();
-});
-ipcMain.on('wake-up-arthur', (event) => {
-	wakeUpArthur();
 });

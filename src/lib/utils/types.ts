@@ -1,5 +1,5 @@
 
-export type IndexType = "title" | "subtitle" | "heading" | "content";
+export type IndexType = "chapter" | "title" | "subtitle" | "heading" | "content";
 export type IndexEntry = {
     type: IndexType;
     line: number;
@@ -9,14 +9,13 @@ export type IndexEntry = {
 };
 export type Stats = {
     percent: string,
+    absW: number,
+    absC: number,
     totalW: number,
     totalC: number,
+    totalL: number,
     selectedW: number,
-    selectedC: number
+    selectedC: number,
+    selectedL: number
 }
-export type ModelDetails = {
-    name: string,
-    model: string,
-    pSize: string,
-    size: number
-}
+export type TagType = "title" | "author" | "ref"

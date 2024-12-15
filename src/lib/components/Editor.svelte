@@ -1,12 +1,33 @@
 <script lang="ts">
-	import { content } from '$lib/utils/stores';
+	import { Saver } from "$lib/utils/db";
+	import { Progress } from "$lib/utils/progress";
+	import { currentNotepad } from "$lib/utils/stores";
+	import { onMount } from "svelte";
 
-	export let editorEl;
+	export let editorEl: HTMLElement;
+	export let isChatting: boolean = false;
+
+	onMount(() => {
+		Progress.track();
+		document.addEventListener("keydown", function (event) {
+			if ((event.ctrlKey || event.metaKey) && event.key === "s") {
+				event.preventDefault();
+				Saver.save();
+			}
+		});
+	});
 </script>
 
-<div class="flex min-w-[640px] max-w-[640px]">
-	<textarea id="editor" bind:this={editorEl} bind:value={$content} />
-</div>
+{#if !isChatting}
+	<div class="flex min-w-[640px] max-w-[640px]">
+		<textarea
+			id="editor"
+			on:input={() => Saver.save({ delay: 2 * 1000 })}
+			bind:this={editorEl}
+			bind:value={$currentNotepad.content}
+		></textarea>
+	</div>
+{/if}
 
 <style>
 	#editor {
@@ -21,5 +42,9 @@
 		overflow: auto;
 		scrollbar-width: none;
 		z-index: 0;
+	}
+	::selection {
+		background: var(--hl_bg) !important;
+		color: var(--hl_fg) !important;
 	}
 </style>

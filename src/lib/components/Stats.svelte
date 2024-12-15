@@ -1,13 +1,22 @@
 <script lang="ts">
-	import { Delimeters, Symbols } from "$lib/utils/constants";
-	import { content, index, stats } from "$lib/utils/stores";
-	import type { IndexEntry, IndexType } from "$lib/utils/types";
+	import { ARTHUR_ENABLED, Symbols } from "$lib/utils/constants";
+	import { currentNotepad, stats } from "$lib/utils/stores";
+	import TimeAgo from "javascript-time-ago";
 	import { onMount } from "svelte";
+	import { get } from "svelte/store";
+	import en from "javascript-time-ago/locale/en";
+	import { arthur } from "$lib/utils/arthur";
+	import ArthurSettings from "./ArthurSettings.svelte";
 
 	export let progressEl: any;
-	export let arthurReady: boolean = false;
 
+	let showArthurStatus: boolean = false;
+	let showArthurSettings: boolean = false;
+
+	TimeAgo.addLocale(en);
+	const timeAgo = new TimeAgo("en-US");
 	var time: string = getCurrentTime();
+	var lastSaveTime: number = get(currentNotepad).modifiedOn;
 
 	function getCurrentTime() {
 		const now = new Date();
@@ -16,49 +25,10 @@
 		return `${hours}:${minutes}`;
 	}
 
-	function getIndexType(line: string) {
-		if (line.startsWith(Delimeters.title)) return "title";
-		else if (line.startsWith(Delimeters.subtitle)) return "subtitle";
-		else if (line.startsWith(Delimeters.heading)) return "heading";
-		return "content";
-	}
-
-	function splitByType(line: string, type: IndexType) {
-		var delimeter = Delimeters[type];
-		return (line.split(delimeter)[1] ?? "").trim();
-	}
-
-	content.subscribe((c) => {
-		var index_: IndexEntry[] = [];
-		var line = 0;
-		var lastIndex = 0;
-		$stats.totalC = 0;
-		$stats.totalW = 0;
-		for (var eachLine of c.split(Symbols.EOL)) {
-			var start = $stats.totalC + line;
-			var end = start + eachLine.length;
-			$stats.totalC += eachLine.length;
-			$stats.totalW += eachLine.split(Symbols.SPACE).length;
-			var type = getIndexType(eachLine) as IndexType;
-			if (type != "content") lastIndex = line;
-			index_.push({
-				line,
-				label:
-					type == "content"
-						? Symbols.EMPTY
-						: splitByType(eachLine, type),
-				type,
-				index: lastIndex,
-				range: { start, end },
-			});
-			line++;
-		}
-		$index = index_;
-	});
-
 	onMount(() => {
 		var clock = setInterval(() => {
 			time = getCurrentTime();
+			lastSaveTime = get(currentNotepad).modifiedOn;
 		}, 1000);
 		return () => {
 			clearInterval(clock);
@@ -66,38 +36,84 @@
 	});
 </script>
 
+{#if ARTHUR_ENABLED}
+	<ArthurSettings bind:show={showArthurSettings}></ArthurSettings>
+{/if}
 <div
-	class="stats h-[32px] px-4 flex flex-row w-[100vw] fixed bottom-0 select-none justify-between items-center min-w-[100vw]"
+	class="stats shadow-sm shadow-gray-400 h-[32px] px-3 flex flex-row w-[100vw] fixed bottom-0 select-none justify-between items-center min-w-[100vw]"
 >
 	<div class="flex flex-row space-x-2 items-center text-xs">
-		<div bind:this={progressEl} />
-		<div class="w-10 stats-text">{$stats.percent}%</div>
+		<div bind:this={progressEl}></div>
+		<div class="w-12 stats-text">{$stats.percent}%</div>
 		<span class="stats-text">{Symbols.DOT}</span>
-		<div class="flex flex-row space-x-2 items-center text-xs stats-text">
-			<div class="flex flex-row space-x-1">
-				<div>{$stats.totalW} W,</div>
-				<div>{$stats.totalC} C</div>
-			</div>
-			{#if $stats.selectedW && $stats.selectedC}
+		<div id="details" class="flex-row space-x-2 text-xs hidden md:flex">
+			<div
+				class="flex flex-row space-x-2 items-center text-xs stats-text"
+			>
 				<div class="flex flex-row space-x-1">
-					(
-					<div>{$stats.selectedW} W,</div>
-					<div>{$stats.selectedC} C</div>
-					)
+					<div>{$stats.totalW} W,</div>
+					<div>{$stats.totalC} C</div>
 				</div>
-			{/if}
+				{#if $stats.selectedW && $stats.selectedC}
+					<div class="flex flex-row space-x-1">
+						(
+						<div>{$stats.selectedW} W,</div>
+						<div>{$stats.selectedC} C</div>
+						)
+					</div>
+				{/if}
+			</div>
+			<span class="stats-text">{Symbols.DOT}</span>
+			<span class="stats-text">{$currentNotepad.name}</span>
+			<span class="stats-text">{Symbols.DOT}</span>
+			<span class="stats-text"
+				>Modified {timeAgo.format(new Date(lastSaveTime))}
+			</span>
 		</div>
 	</div>
-	<div class="text-xs flex flex-row items-center justify-between space-x-3">
+	<div class="text-xs flex flex-row justify-between items-start space-x-3">
 		<span class="stats-text">{time}</span>
+		{#if showArthurStatus}
+			<tooltip
+				class="fixed right-1 bottom-[32px] bg-black text-white h-4 text-md p-1 flex flex-col items-center justify-center"
+			>
+				<div>
+					Arthur {$arthur.state === "loading"
+						? "Loading..."
+						: $arthur.state
+							? "Ready!"
+							: "Unavailable"}
+				</div>
+			</tooltip>
+		{/if}
+		{#if ARTHUR_ENABLED}
+			<button
+				on:mouseenter={() => (showArthurStatus = true)}
+				on:mouseleave={() => (showArthurStatus = false)}
+				on:click={() => (showArthurSettings = true)}
+				class="opacity-50 hover:opacity-100 outline-none"
+			>
+				{#if $arthur.state === "loading"}
+					<div class="w-3 h-3 rounded-full bg-[orange]"></div>
+				{:else}
+					<div
+						class:bg-green-500={$arthur.state}
+						class:bg-red-500={!$arthur.state}
+						class="w-3 h-3 rounded-full"
+					></div>
+				{/if}
+			</button>
+		{/if}
 	</div>
 </div>
 
 <style>
 	.stats-text {
-		@apply opacity-40;
+		font-family: var(--font-family);
+		@apply opacity-25;
 	}
 	.stats {
 		background: var(--background) !important;
+		z-index: 0;
 	}
 </style>

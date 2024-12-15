@@ -3,6 +3,15 @@ body {
     color: var(--f_high) !important;
 }
 
+#screen {
+    @apply w-full h-full fixed;
+    background: var(--background);
+}
+
+#page {
+    background: var(--background);
+}
+
 textarea {
     color: var(--f_high) !important
 }
@@ -21,11 +30,6 @@ stats i {
 
 highlight b {
     border-bottom: 1px solid var(--f_low) !important;
-}
-
-::selection {
-    background: var(--hl_bg) !important;
-    color: var(--hl_fg) !important
 }
 
 navi {

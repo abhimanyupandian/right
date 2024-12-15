@@ -1,122 +1,107 @@
-import { get } from "svelte/store";
-import { arthurReady, availableModels, currentModel } from "./stores";
-import { PUBLIC_OLLAMA_HOST } from "$env/static/public";
-import { PUBLIC_OLLAMA_DEBUG_MODE } from "$env/static/public";
-import type { ModelDetails } from "./types";
+import { CreateMLCEngine, MLCEngine, type ChatCompletionMessageParam, type InitProgressReport } from "@mlc-ai/web-llm";
+import { get, writable } from "svelte/store";
+import { ARTHUR_ENABLED } from "./constants";
+
+export let arthur = writable<{ state: boolean | 'loading', engine?: MLCEngine, model?: string }>({ state: false });
+export let arthurInitProgress = writable<string>("");
+
+export const currentModel = writable<string>(localStorage.currentModel ?? "")
+currentModel.subscribe((value) => localStorage.currentModel = value)
+
+export const modelDownloadProgress = writable<Record<string, number>>({});
+
+export const AVAILABLE_MODELS: string[] = ["Llama-3.2-1B-Instruct-q4f32_1-MLC"];
 
 export class Arthur {
-    private init() { }
+    static model: string;
 
-    private static getPrompt = (content: string, question: string) => `
-This is the argument: ${content}
-This is the question: ${question}
-You are a helpful assistant named Arthur. Please respond as accurately as possible without hallucinating. Just give me the response. You don't have to give me the exact steps that you are doing. When the user mentions "statement" or "this", the user is talking about the argument provided. The argument is basically a snippet of text extracted from a larger text. Ensure that all the responses are within the context of the argument provided. 
-If the user asks something beyond the context, just greet them and tell them that you are not authorized to respond to anything beyond the context of the argument provided without providing any details of the context, in less than 20 words.
+    static async chat(context: string, query: string) {
+        if (!get(arthur).engine) return;
+        const messages: ChatCompletionMessageParam[] = [
+            {
+                role: "system", content: `
+You are a helpful assistant named Arthur. Please respond as accurately as possible without hallucinating. Just give me the response for the question asked. You don't have to give me the exact steps that you are doing. When the user mentions "statement" or "this", the user is talking about the argument provided. The argument is basically a snippet of text extracted from a larger text and is the text between the tags ###ARGSTART###  and ###ARGEND###. Ensure that all the responses are within the context of the argument provided. If the user asks something beyond the context, just greet them and tell them that you are not authorized to respond to anything beyond the context of the argument provided without providing any details of the context. The users question is the text between ###QSTART### and ###QEND###
 `
-    static _payload(prompt: string) {
-        var model = get(currentModel);
-        if (!model) throw `MODEL_NOT_SET`;
-        var url = `${PUBLIC_OLLAMA_HOST}/api/generate`;
-        var options = {
-            method: 'POST',
-            body: JSON.stringify({
-                model,
-                prompt: prompt,
-                stream: true,
-            }),
-        };
-        return { url, options }
+            },
+            {
+                role: "user", content: `
+###ARGSTART###
+${context}
+###ARGEND###
+###QSTART###
+${query}
+###QEND###
+`
+            },
+        ]
+        // console.log(messages)
+        // Chunks is an AsyncGenerator object
+        const chunks = await get(arthur).engine!.chat.completions.create({
+            messages,
+            temperature: 1,
+            stream: true, // <-- Enable streaming
+            stream_options: { include_usage: true },
+        });
+        return chunks;
     }
 
-    static payload(content: string, question: string) {
+    static async getCachedModels() {
         try {
-            return Arthur._payload(Arthur.getPrompt(content, question));
-        } catch (e) {
-            arthurReady.set(false);
-        }
-    }
+            // Get all cache names
+            const cacheNames = await caches.keys();
+            const allCachedItems = [];
 
-    static check() {
-        if (get(arthurReady)) return;
-        setTimeout(() => {
-            try {
-                Arthur.list().then(e => availableModels.set(e))
-                const { url, options } = Arthur._payload("Hey Arthur!");
-                window.fetch(url, options)
-                    .then((resp) => {
-                        if (resp.ok) arthurReady.set(true);
-                    });
-            } catch (e) {
-                console.error(e)
-            }
-        }, 1000) // Waiting before checking!
-    }
+            for (const cacheName of cacheNames) {
+                if (cacheName !== 'webllm/config') continue;
+                const cache = await caches.open(cacheName);
+                // Get all cached requests
+                const cachedRequests = await cache.keys();
 
-    static wakeup() {
-        if (!get(arthurReady)) {
-            console.log("Waking Arthur up...");
-            window.arthur.says("arthur-says", (info: any) => {
-                var message = info.message.toString();
-                if (message.includes("address already in use")) Arthur.check();
-                else if (message.includes("Running in")) Arthur.check();
-                else if (info.event == "id") Arthur.check();
-                if (PUBLIC_OLLAMA_DEBUG_MODE == "1") console.log(message);
-            });
-            window.arthur.start();
-        } else {
-            Arthur.check();
-        }
-    }
-
-    static async list(): Promise<ModelDetails[]> {
-        const url = `${PUBLIC_OLLAMA_HOST}/api/tags`;
-        try {
-            var resp = await fetch(url);
-            if (resp.status) {
-                var json = await resp.json();
-                var models = [];
-                for (var each of json.models) {
-                    models.push({
-                        name: each.name,
-                        model: each.model,
-                        size: each.size,
-                        pSize: each.details.parameter_size
-                    })
+                // Store the requests in the allCachedItems array
+                for (const request of cachedRequests) {
+                    var url = new URL(request.url)
+                    var modelName = url.pathname.split("/")[2];
+                    allCachedItems.push(modelName);
                 }
-                return models;
             }
-        } catch (e) {
-            console.error(e)
+            return allCachedItems;
+        } catch (error) {
+            console.error('Error retrieving cached items:', error);
         }
         return [];
     }
 
-    static set(model: string) {
-        currentModel.set(model);
+    static async init(options: { model: string, callback: (report: InitProgressReport) => void }) {
+        arthur.set({ state: 'loading' });
+        const model = options.model ?? AVAILABLE_MODELS[0];
+
+        CreateMLCEngine(
+            model,
+            { initProgressCallback: options.callback },
+        ).then(engine => {
+            const old = get(arthur).engine;
+            if (old) old.unload();
+            arthur.set({ state: true, engine, model: options.model });
+            currentModel.set(model);
+        }).catch(console.error);
     }
 
-    static async remove(name: string) {
-        const url = `${PUBLIC_OLLAMA_HOST}/api/delete`;
-        try {
-            var resp = await fetch(url, { method: 'DELETE', body: JSON.stringify({ name }) });
-            if (resp.status) {
-                availableModels.update(models => {
-                    return models.filter(m => m.model === name);
+    static async restore() {
+        if (!ARTHUR_ENABLED) return;
+        const model = get(currentModel);
+        if (!model) return;
+
+        if (model === get(arthur).model) return;
+
+        Arthur.init({
+            model,
+            callback: (e) => {
+                const percent = Math.round(e.progress * 100);
+                modelDownloadProgress.update(v => {
+                    v[model] = percent;
+                    return v;
                 })
-            }
-        } catch (e) {
-            console.error(e)
-        }
-    }
-
-    static async pull(model: string) {
-        const url = `${PUBLIC_OLLAMA_HOST}/api/pull`;
-        try {
-            var resp = await fetch(url, { method: 'POST', body: JSON.stringify({ model, stream: true }) });
-            if (resp.status) {
-            }
-        } catch (e) {
-            console.error(e)
-        }
+            },
+        });
     }
 }
