@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import { external } from './shared';
 
 export default defineConfig({
-	base: "https://kappasquare.github.io/right/",
+	base: "./",
 	build: {
 		outDir: '.vite/build/main',
 		minify: true,

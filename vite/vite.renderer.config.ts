@@ -3,7 +3,7 @@ import { sveltekit } from '@sveltejs/kit/vite';
 
 //https://vitejs.dev/config
 export default defineConfig({
-	base: "https://kappasquare.github.io/right/",
+	base: "./",
 	plugins: [sveltekit()],
 	clearScreen: false
 });
