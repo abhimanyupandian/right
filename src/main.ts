@@ -56,7 +56,7 @@ app.on('ready', () => {
 
 		const responseFilePath = await isFile(path.join(srcFolder, requestPath))
 			?? await isFile(path.join(srcFolder, path.dirname(requestPath), `${path.basename(requestPath) || 'index'}.html`))
-			?? path.join(srcFolder, '200.html');
+			?? path.join(srcFolder, 'index.html');
 		return await net.fetch(url.pathToFileURL(responseFilePath).toString());
 	});
 });

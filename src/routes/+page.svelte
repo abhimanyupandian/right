@@ -2,7 +2,7 @@
 	import FileHunter from "$lib/components/FileHunter.svelte";
 	import Delete from "$lib/icons/Delete.svelte";
 	import New from "$lib/icons/New.svelte";
-	import { getNewNotepadMetdata } from "$lib/utils/constants";
+	import { ARTHUR_ENABLED, getNewNotepadMetdata } from "$lib/utils/constants";
 	import { db, type Notepad } from "$lib/utils/db";
 	import { recentsRefresher } from "$lib/utils/stores";
 	import { onMount } from "svelte";
@@ -61,8 +61,11 @@
 	};
 </script>
 
-<ArthurSettings bind:show={showArthurSettings}></ArthurSettings>
+{#if ARTHUR_ENABLED}
+	<ArthurSettings bind:show={showArthurSettings}></ArthurSettings>
+{/if}
 <FileHunter bind:show={showFileHunter}></FileHunter>
+
 {#if loadingDone}
 	<div
 		class="select-none flex max-h-[calc(100vh-64px)] min-h-[calc(100vh-64px)] min-w-screen max-w-screen w-screen space-x-2"
@@ -157,22 +160,26 @@
 					{/if}
 				</div>
 			</div>
-			<div class="flex flex-col space-y-1">
-				<div class="text-xl opacity-25 select-none">Arthur AI</div>
-				<!-- svelte-ignore a11y_click_events_have_key_events -->
-				<!-- svelte-ignore a11y_no_static_element_interactions -->
-				<div class="flex flex-row justify-start space-x-2 items-center">
-					<div class="stroke-blue-500">
-						<Wand></Wand>
-					</div>
+			{#if ARTHUR_ENABLED}
+				<div class="flex flex-col space-y-1">
+					<div class="text-xl opacity-25 select-none">Arthur AI</div>
+					<!-- svelte-ignore a11y_click_events_have_key_events -->
+					<!-- svelte-ignore a11y_no_static_element_interactions -->
 					<div
-						on:click={() => (showArthurSettings = true)}
-						class=" text-blue-500 rounded-sm cursor-pointer"
+						class="flex flex-row justify-start space-x-2 items-center"
 					>
-						{`Settings`}
+						<div class="stroke-blue-500">
+							<Wand></Wand>
+						</div>
+						<div
+							on:click={() => (showArthurSettings = true)}
+							class=" text-blue-500 rounded-sm cursor-pointer"
+						>
+							{`Settings`}
+						</div>
 					</div>
 				</div>
-			</div>
+			{/if}
 		</div>
 	</div>
 {:else}

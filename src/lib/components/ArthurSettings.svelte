@@ -4,7 +4,6 @@
     import {
         Arthur,
         AVAILABLE_MODELS,
-        currentModel,
         modelDownloadProgress,
     } from "$lib/utils/arthur";
     import { onMount } from "svelte";
@@ -18,7 +17,6 @@
 
     function onSelectModel(modelName: string) {
         if ($modelDownloadProgress[modelName]) return;
-        $currentModel = modelName;
         showLoading = true;
         Arthur.init({
             model: modelName,

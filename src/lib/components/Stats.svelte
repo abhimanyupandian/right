@@ -1,15 +1,17 @@
 <script lang="ts">
-	import { Symbols } from "$lib/utils/constants";
+	import { ARTHUR_ENABLED, Symbols } from "$lib/utils/constants";
 	import { currentNotepad, stats } from "$lib/utils/stores";
 	import TimeAgo from "javascript-time-ago";
 	import { onMount } from "svelte";
 	import { get } from "svelte/store";
 	import en from "javascript-time-ago/locale/en";
 	import { arthur } from "$lib/utils/arthur";
+	import ArthurSettings from "./ArthurSettings.svelte";
 
 	export let progressEl: any;
 
 	let showArthurStatus: boolean = false;
+	let showArthurSettings: boolean = false;
 
 	TimeAgo.addLocale(en);
 	const timeAgo = new TimeAgo("en-US");
@@ -34,12 +36,16 @@
 	});
 </script>
 
+{#if ARTHUR_ENABLED}
+	<ArthurSettings bind:show={showArthurSettings}></ArthurSettings>
+{/if}
 <div
-	class="stats h-[32px] px-3 flex flex-row w-[100vw] fixed bottom-0 select-none justify-between items-center min-w-[100vw]"
+	class="stats shadow-sm shadow-gray-400 h-[32px] px-3 flex flex-row w-[100vw] fixed bottom-0 select-none justify-between items-center min-w-[100vw]"
 >
 	<div class="flex flex-row space-x-2 items-center text-xs">
 		<div bind:this={progressEl}></div>
-		<div class="w-10 stats-text">{$stats.percent}%</div>
+		<div class="w-12 stats-text">{$stats.percent}%</div>
+		<span class="stats-text">{Symbols.DOT}</span>
 		<div id="details" class="flex-row space-x-2 text-xs hidden md:flex">
 			<div
 				class="flex flex-row space-x-2 items-center text-xs stats-text"
@@ -80,22 +86,24 @@
 				</div>
 			</tooltip>
 		{/if}
-		<!-- svelte-ignore a11y_no_static_element_interactions -->
-		<div
-			on:mouseenter={() => (showArthurStatus = true)}
-			on:mouseleave={() => (showArthurStatus = false)}
-			class="opacity-50 hover:opacity-100"
-		>
-			{#if $arthur.state === "loading"}
-				<div class="w-3 h-3 rounded-full bg-[orange]"></div>
-			{:else}
-				<div
-					class:bg-green-500={$arthur.state}
-					class:bg-red-500={!$arthur.state}
-					class="w-3 h-3 rounded-full"
-				></div>
-			{/if}
-		</div>
+		{#if ARTHUR_ENABLED}
+			<button
+				on:mouseenter={() => (showArthurStatus = true)}
+				on:mouseleave={() => (showArthurStatus = false)}
+				on:click={() => (showArthurSettings = true)}
+				class="opacity-50 hover:opacity-100 outline-none"
+			>
+				{#if $arthur.state === "loading"}
+					<div class="w-3 h-3 rounded-full bg-[orange]"></div>
+				{:else}
+					<div
+						class:bg-green-500={$arthur.state}
+						class:bg-red-500={!$arthur.state}
+						class="w-3 h-3 rounded-full"
+					></div>
+				{/if}
+			</button>
+		{/if}
 	</div>
 </div>
 

@@ -3,7 +3,7 @@
     import { onMount } from "svelte";
 
     var contextHtml = "";
-    let contentEl: any;
+    let contentEl: HTMLElement;
 
     export let isChatting: boolean;
 
@@ -21,11 +21,18 @@
             isChatting = false;
         }
     }
+
     $: if (contentEl) {
         contentEl.scrollTo({ top: $selectionTracker.scrollTop });
         contentEl.onscroll = (e: any) => {
-            $selectionTracker.scrollTop = e.target.scrollTop;
+            // Remove this to disable scrolling context into view
+            // $selectionTracker.scrollTop = e.target.scrollTop;
         };
+        // document.getElementById("context-selected")!.scrollIntoView({
+        //     behavior: "smooth",
+        //     block: "center",
+        //     inline: "center",
+        // });
     }
 
     onMount(() => {

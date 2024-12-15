@@ -12,7 +12,8 @@
 		"make": "electron-forge make",
 		"publish": "electron-forge publish",
 		"dev": "vite -c vite/vite.renderer.config.ts",
-		"svelte-build": "vite build -c vite/vite.renderer.config.ts",
+		"preview": "vite preview",
+		"build": "rm -rf .vite && vite build -c vite/vite.renderer.config.ts",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"test": "vitest"
