@@ -8,10 +8,13 @@
 	import { onMount } from "svelte";
 	import Wand from "$lib/icons/Wand.svelte";
 	import ArthurSettings from "$lib/components/ArthurSettings.svelte";
+	import TutorialIcon from "$lib/icons/Tutorial.svelte";
+	import Tutorial from "./Tutorial.svelte";
 
 	var savedNotepads: Notepad[] = [];
 	var showFileHunter: boolean = false;
 	var showArthurSettings: boolean = false;
+	var showTutorial: boolean = false;
 
 	function onNewNotepad() {
 		var metadata = getNewNotepadMetdata();
@@ -64,6 +67,7 @@
 {#if ARTHUR_ENABLED}
 	<ArthurSettings bind:show={showArthurSettings}></ArthurSettings>
 {/if}
+<Tutorial bind:show={showTutorial}></Tutorial>
 <FileHunter bind:show={showFileHunter}></FileHunter>
 
 {#if loadingDone}
@@ -160,11 +164,24 @@
 					{/if}
 				</div>
 			</div>
-			{#if ARTHUR_ENABLED}
-				<div class="flex flex-col space-y-1">
-					<div class="text-xl opacity-25 select-none">Arthur AI</div>
-					<!-- svelte-ignore a11y_click_events_have_key_events -->
-					<!-- svelte-ignore a11y_no_static_element_interactions -->
+			<div class="flex flex-col space-y-">
+				<div class="text-xl opacity-25 select-none">Settings</div>
+				<!-- svelte-ignore a11y_click_events_have_key_events -->
+				<!-- svelte-ignore a11y_no_static_element_interactions -->
+				<div class="flex flex-row justify-start space-x-2 items-center">
+					<div class="stroke-blue-500">
+						<TutorialIcon></TutorialIcon>
+					</div>
+					<div
+						on:click={() => (showTutorial = true)}
+						class=" text-blue-500 rounded-sm cursor-pointer"
+					>
+						{`Tutorial`}
+					</div>
+				</div>
+				<!-- svelte-ignore a11y_click_events_have_key_events -->
+				<!-- svelte-ignore a11y_no_static_element_interactions -->
+				{#if ARTHUR_ENABLED}
 					<div
 						class="flex flex-row justify-start space-x-2 items-center"
 					>
@@ -175,11 +192,11 @@
 							on:click={() => (showArthurSettings = true)}
 							class=" text-blue-500 rounded-sm cursor-pointer"
 						>
-							{`Settings`}
+							{`Arthur AI`}
 						</div>
 					</div>
-				</div>
-			{/if}
+				{/if}
+			</div>
 		</div>
 	</div>
 {:else}
