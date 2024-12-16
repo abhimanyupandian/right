@@ -1,9 +1,8 @@
 <script lang="ts">
     import { arthur, Arthur } from "$lib/utils/arthur";
-    import { Symbols } from "$lib/utils/constants";
+    import { ARTHUR_ENABLED, Symbols } from "$lib/utils/constants";
     import { selectionTracker } from "$lib/utils/stores";
     import { clickOutside } from "$lib/utils/ui";
-    import { onMount } from "svelte";
     import { writable } from "svelte/store";
 
     const IS_DESKTOP = !!(globalThis as any).IS_DESKTOP;
@@ -14,7 +13,7 @@
     var messagesEl: HTMLElement;
     export let prompt: string = "";
 
-    let enabled: boolean = $arthur.state === true;
+    let enabled: boolean = $arthur.state === true && ARTHUR_ENABLED;
     export let isChatting: boolean;
 
     const messages = writable<

@@ -2,7 +2,10 @@ import { CreateMLCEngine, MLCEngine, type ChatCompletionMessageParam, type InitP
 import { get, writable } from "svelte/store";
 import { ARTHUR_ENABLED } from "./constants";
 
-export let arthur = writable<{ state: boolean | 'loading', engine?: MLCEngine, model?: string }>({ state: false });
+export let arthur = writable<{
+    state: boolean | 'loading' | 'unsupported',
+    engine?: MLCEngine, model?: string
+}>({ state: false });
 export let arthurInitProgress = writable<string>("");
 
 export const currentModel = writable<string>(localStorage.currentModel ?? "")
@@ -10,7 +13,9 @@ currentModel.subscribe((value) => localStorage.currentModel = value)
 
 export const modelDownloadProgress = writable<Record<string, number>>({});
 
-export const AVAILABLE_MODELS: string[] = ["Llama-3.2-1B-Instruct-q4f32_1-MLC"];
+export const AVAILABLE_MODELS: string[] = [
+    "Llama-3.2-1B-Instruct-q4f32_1-MLC"
+];
 
 export class Arthur {
     static model: string;
@@ -20,21 +25,23 @@ export class Arthur {
         const messages: ChatCompletionMessageParam[] = [
             {
                 role: "system", content: `
-You are a helpful assistant named Arthur. Please respond as accurately as possible without hallucinating. Just give me the response for the question asked. You don't have to give me the exact steps that you are doing. When the user mentions "statement" or "this", the user is talking about the argument provided. The argument is basically a snippet of text extracted from a larger text and is the text between the tags ###ARGSTART###  and ###ARGEND###. Ensure that all the responses are within the context of the argument provided. If the user asks something beyond the context, just greet them and tell them that you are not authorized to respond to anything beyond the context of the argument provided without providing any details of the context. The users question is the text between ###QSTART### and ###QEND###
+You are a writing assistant limited to the text the user selects. Follow the user's instructions to improve the selected text without referencing outside context.  
+
+### Tasks:  
+- **Rephrase:** Rewrite while keeping the meaning.  
+- **Shorten:** Condense while preserving key points.  
+- **Expand:** Add detail or explanation.  
+- **Clarify:** Make the text clearer.  
+- **Correct:** Fix grammar, spelling, and style.  
+
+Provide the revised text directly unless further clarification is needed.
 `
             },
             {
-                role: "user", content: `
-###ARGSTART###
-${context}
-###ARGEND###
-###QSTART###
-${query}
-###QEND###
-`
-            },
+                role: 'user', content: query
+            }
         ]
-        // console.log(messages)
+        console.log(messages)
         // Chunks is an AsyncGenerator object
         const chunks = await get(arthur).engine!.chat.completions.create({
             messages,
@@ -71,19 +78,27 @@ ${query}
         return [];
     }
 
-    static async init(options: { model: string, callback: (report: InitProgressReport) => void }) {
+    static async init(options: {
+        model: string,
+        onError: (e: any) => void;
+        onSuccess: (report: InitProgressReport) => void
+    }) {
         arthur.set({ state: 'loading' });
         const model = options.model ?? AVAILABLE_MODELS[0];
 
         CreateMLCEngine(
             model,
-            { initProgressCallback: options.callback },
+            { initProgressCallback: options.onSuccess },
         ).then(engine => {
             const old = get(arthur).engine;
             if (old) old.unload();
             arthur.set({ state: true, engine, model: options.model });
             currentModel.set(model);
-        }).catch(console.error);
+        }).catch((e) => {
+            options.onError(e);
+            // console.error(e);
+            arthur.set({ state: 'unsupported' });
+        });
     }
 
     static async restore() {
@@ -95,8 +110,11 @@ ${query}
 
         Arthur.init({
             model,
-            callback: (e) => {
-                const percent = Math.round(e.progress * 100);
+            onError: (e) => {
+                arthur.set({ state: 'unsupported' })
+            },
+            onSuccess: (s) => {
+                const percent = Math.round(s.progress * 100);
                 modelDownloadProgress.update(v => {
                     v[model] = percent;
                     return v;

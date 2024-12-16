@@ -1,11 +1,13 @@
 <script lang="ts">
     import Check from "$lib/icons/Check.svelte";
     import Download from "$lib/icons/Download.svelte";
+    import Error from "$lib/icons/Error.svelte";
     import {
         Arthur,
         AVAILABLE_MODELS,
         modelDownloadProgress,
     } from "$lib/utils/arthur";
+    import { ARTHUR_ENABLED } from "$lib/utils/constants";
     import { onMount } from "svelte";
 
     export var show: boolean = false;
@@ -15,13 +17,21 @@
     let modelNameEl: HTMLElement;
     let modelName: string;
 
+    let error: string;
+
     function onSelectModel(modelName: string) {
         if ($modelDownloadProgress[modelName]) return;
         showLoading = true;
+        error = "";
         Arthur.init({
             model: modelName,
-            callback: (e) => {
-                const percent = Math.round(e.progress * 100);
+            onError: (e) => {
+                showLoading = false;
+                error =
+                    "Unsupported browser. Please use a browser that supports WebGPU.";
+            },
+            onSuccess: (s) => {
+                const percent = Math.round(s.progress * 100);
                 if (percent > 0) showLoading = false;
                 $modelDownloadProgress[modelName] = percent;
             },
@@ -44,7 +54,7 @@
     });
 </script>
 
-{#if show}
+{#if show && ARTHUR_ENABLED}
     <div
         bind:this={overlayEl}
         class="fixed z-10 opacity-50 bg-black inset-0 justify-center items-center hidden md:flex"
@@ -62,6 +72,16 @@
         <div
             class="bg-black p-2 rounded shadow-lg w-[500px] border-[0.1em] border-zinc-800 flex flex-col overflow-hidden"
         >
+            {#if error}
+                <div
+                    class="bg-red-700 text-red-200 flex flex-row space-x-4 items-center justify-center py-2 px-3 rounded-sm mb-2 text-sm"
+                >
+                    <div class="stroke-red-100 fill-red-100">
+                        <Error></Error>
+                    </div>
+                    <div>{error}</div>
+                </div>
+            {/if}
             <div class="flex flex-row items-center space-x-2">
                 <input
                     type="text"
