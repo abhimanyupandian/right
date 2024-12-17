@@ -1,4 +1,4 @@
-<svelte:head>
+<!-- <svelte:head>
     <title>Right - Focused Writing</title>
     <meta
         name="description"
@@ -6,7 +6,7 @@
 It runs directly in your browser, completely free and serverless, with all data stored locally for maximum privacy and convenience."
     />
     <meta name="”robots”" content="index, follow" />
-</svelte:head>
+</svelte:head> -->
 
 <div class="lg:px-[200px] px-[40px] py-[40px] flex flex-col space-y-[40px]">
     <div class="h-[70vh]">

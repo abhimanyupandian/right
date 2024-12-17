@@ -22,6 +22,7 @@
     import ContextViewer from "$lib/components/ContextViewer.svelte";
     import { arthur } from "$lib/utils/arthur";
     import Arthur from "$lib/components/Arthur.svelte";
+    import NotFound from "./NotFound.svelte";
 
     export let notepadId: string | undefined = undefined;
 
@@ -177,20 +178,7 @@
 
 {#if !$currentNotepad}
     {#if loadingDone}
-        <div
-            class="font flex flex-row min-h-screen justify-center items-center select-none"
-        >
-            <div
-                class="flex flex-row space-x-4 text-3xl opacity-20 items-center"
-            >
-                <div class="flex flex-col items-end">
-                    <div>Not</div>
-                    <div>Found</div>
-                </div>
-                <div class="h-20 w-[0.05em] bg-white"></div>
-                <div class="">404</div>
-            </div>
-        </div>
+        <NotFound></NotFound>
     {:else}
         <div id="screen"></div>
     {/if}
