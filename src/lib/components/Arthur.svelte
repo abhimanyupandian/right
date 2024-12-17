@@ -275,7 +275,6 @@
 {#if enabled}
     <div
         class:opacity-100={chatFocused}
-        class:opacity-10={!chatFocused}
         class:pb-10={IS_DESKTOP}
         class="duration-100 flex-1 flex-col max-h-[calc(100vh)] max-w-[calc(100vw-976px)] min-w-[calc(100vw-976px)] justify-between px-4 lg:block md:hidden pb-2"
     >
@@ -310,11 +309,11 @@
                             </div>
                         {:else if each.source == "context"}
                             <div
-                                class="flex flex-row items-center justify-end w-full opacity-10 hover:opacity-100"
+                                class="flex flex-row items-center justify-center w-full opacity-10 hover:opacity-100"
                             >
                                 <div
                                     id={`CONTEXT:${each.timestamp}`}
-                                    class="bubble p-4 py-2 rounded-lg text-white"
+                                    class="bubble p-4 py-2 rounded-lg text-center text-white bg-black w-full"
                                 >
                                     {each.message}
                                 </div>
