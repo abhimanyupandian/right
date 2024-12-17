@@ -9,7 +9,7 @@ It runs directly in your browser, completely free and serverless, with all data 
 </svelte:head> -->
 
 <div class="lg:px-[200px] px-[40px] py-[40px] flex flex-col space-y-[40px]">
-    <div class="h-[70vh]">
+    <div class="pb-[100px]">
         <div class="flex lg:flex-row flex-col justify-center items-center">
             <a
                 href="/"
