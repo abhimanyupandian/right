@@ -63,6 +63,9 @@
                     target="_blank">web-llm</a
                 > on the backend.
             </div>
+            <div>
+                3. Currently AI capabilities are only supported in machines which have atleast 16 GB RAM and browsers which support WebGPU.
+            </div>
         </div>
     </div>
 {/if}
