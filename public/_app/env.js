@@ -1,1 +1,0 @@
-export const env={"PUBLIC_OLLAMA_HOST":"http://127.0.0.1:11444","PUBLIC_OLLAMA_DEBUG_MODE":"0"}
