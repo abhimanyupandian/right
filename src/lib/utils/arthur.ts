@@ -14,38 +14,46 @@ currentModel.subscribe((value) => localStorage.currentModel = value)
 export const modelDownloadProgress = writable<Record<string, number>>({});
 
 export const AVAILABLE_MODELS: string[] = [
-    "Llama-3.2-1B-Instruct-q4f32_1-MLC"
+    "Llama-3.2-3B-Instruct-q4f32_1-MLC",
 ];
 
 export class Arthur {
     static model: string;
 
-    static async chat(context: string, query: string) {
+    static async chat(context: string, query: string, options?: {
+        words?: number,
+        sentences?: number
+    }) {
         if (!get(arthur).engine) return;
+
+        var limitsPrompt = '';
+        var limits: string[] = [];
+        if (options?.words) {
+            limits.push(`${options?.words} words`)
+        }
+        if (options?.sentences) {
+            limits.push(`${options?.sentences} sentences`)
+        }
+        if (limits.length) {
+            limitsPrompt = `Repsond in exactly ${limits.join(" and ")}.`
+        }
+
+        const prompt = `
+You are a useful AI assistant who helps users write content. The user selects a portion of text and asks you a question based on the selected text. You only have information about the selected text and the question the user asks. Respond precisely in plain text without giving any other information about the steps you have taken. Do not provide the answer within quotes.
+This is the text the user has selected: ${context}
+`
+        // console.log(prompt)
         const messages: ChatCompletionMessageParam[] = [
             {
-                role: "system", content: `
-You are a writing assistant limited to the text the user selects. Follow the user's instructions to improve the selected text without referencing outside context.  
-
-### Tasks:  
-- **Rephrase:** Rewrite while keeping the meaning.  
-- **Shorten:** Condense while preserving key points.  
-- **Expand:** Add detail or explanation.  
-- **Clarify:** Make the text clearer.  
-- **Correct:** Fix grammar, spelling, and style.  
-
-Provide the revised text directly unless further clarification is needed.
-`
+                role: "system", content: prompt
             },
             {
-                role: 'user', content: query
+                role: 'user', content: `${query}. ${limitsPrompt}`
             }
         ]
-        console.log(messages)
-        // Chunks is an AsyncGenerator object
-        const chunks = await get(arthur).engine!.chat.completions.create({
+        const chunks = await get(arthur).engine!.chatCompletion({
             messages,
-            temperature: 1,
+            temperature: 0,
             stream: true, // <-- Enable streaming
             stream_options: { include_usage: true },
         });
@@ -96,7 +104,7 @@ Provide the revised text directly unless further clarification is needed.
             currentModel.set(model);
         }).catch((e) => {
             options.onError(e);
-            // console.error(e);
+            console.error(e);
             arthur.set({ state: 'unsupported' });
         });
     }

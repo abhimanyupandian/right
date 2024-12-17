@@ -21,6 +21,7 @@
 
     function onSelectModel(modelName: string) {
         if ($modelDownloadProgress[modelName]) return;
+        if ($modelDownloadProgress[modelName] < 100) return;
         showLoading = true;
         error = "";
         Arthur.init({

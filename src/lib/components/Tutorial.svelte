@@ -34,7 +34,7 @@
                 <div class="text-black bg-white py-1 px-2 rounded-md">
                     cmd + o
                 </div>
-                <div>File Hunter</div>
+                <div>Finder</div>
             </div>
             <div class="h-2"></div>
             <div class="text-zinc-400">Tags</div>

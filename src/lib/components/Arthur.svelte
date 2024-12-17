@@ -82,6 +82,7 @@
     }
 
     async function handleKeyPress(e: any) {
+        if (!prompt.startsWith("/")) return;
         var keyCode = e.code || e.key;
         var resp: Response = { status: false };
         if (keyCode == "Enter" && prompt) {
@@ -97,6 +98,7 @@
                     timestamp: resp.id!,
                 });
                 $messages.push({
+                    // for streaming later
                     source: "ai",
                     message: "",
                     timestamp: resp.id!,
@@ -108,26 +110,66 @@
 
     var chatFocused = true;
 
-    function refreshMessages() {
-        messagesEl.lastElementChild?.scrollIntoView({ behavior: "smooth" });
-    }
-
     function isValidCommand() {
         var args = prompt.split(Symbols.SPACE);
+        var words: number = -1;
+        var sentences: number = -1;
+        for (var each of args.slice(1)) {
+            if (each.endsWith("w")) {
+                words = parseInt(each.match(/\d/g)?.join("") ?? "-1");
+            } else if (each.endsWith("s")) {
+                sentences = parseInt(each.match(/\d/g)?.join("") ?? "-1");
+            }
+        }
         var commandDef = $commands.filter((e) => `/${e.label}` === args[0])[0];
-        return { args, commandDef };
+        return { args, commandDef, words, sentences };
     }
 
     async function handleCommand() {
-        var { args, commandDef } = isValidCommand();
+        var { args, commandDef, words, sentences } = isValidCommand();
         if (commandDef) {
-            return await commandDef.handler(args);
+            const { prompt } = await commandDef.handler(args);
+
+            startLoading();
+            startStreaming();
+
+            const messageId = new Date().getMilliseconds().toString();
+            try {
+                Arthur.chat($selectionTracker.content, prompt, {
+                    words: words > 0 ? words : undefined,
+                    sentences: sentences > 0 ? sentences : undefined,
+                }).then((chunks) => {
+                    if (chunks) {
+                        const messageDiv = document.getElementById(
+                            `AI:${messageId}`,
+                        )!;
+                        setTimeout(async () => {
+                            messageDiv.textContent = "";
+                            for await (const chunk of chunks) {
+                                messageDiv.textContent +=
+                                    chunk.choices[0]?.delta.content || "";
+                                if (messagesEl) {
+                                    messagesEl.scrollTop =
+                                        messagesEl.scrollHeight;
+                                }
+                                if (chunk.usage) {
+                                    reset();
+                                }
+                            }
+                        }, 100); // Message DOM must be rendered.
+                    }
+                });
+                return {
+                    status: true,
+                    id: messageId,
+                };
+            } catch (e) {
+                return {
+                    status: false,
+                };
+            }
         }
         return { status: false };
-    }
-
-    $: if ($messages.length) {
-        setTimeout(() => refreshMessages(), 1);
     }
 
     $: if (isChatting) {
@@ -142,6 +184,7 @@
     } else {
         enabled = false;
         chatFocused = false;
+        $messages = [];
     }
 
     $: if (chatFocused && promptEl) {
@@ -157,38 +200,48 @@
             label: "rephrase",
             alias: ["reword"],
             handler: async (v) => {
-                return { status: true, content: v.join(",") };
+                return {
+                    prompt: "Rephrase the selected text.",
+                };
             },
         },
         {
-            label: "debate",
+            label: "support",
             handler: async (v) => {
-                return { status: true, content: v.join(",") };
+                return {
+                    prompt: "Provide evidence or arguments that support the meaning of the selected text.",
+                };
             },
         },
         {
-            label: "outro",
+            label: "argue",
             handler: async (v) => {
-                return { status: true, content: v.join(",") };
+                return {
+                    prompt: "Provide evidence or arguments that challenge or oppose the meaning of the selected text.",
+                };
+            },
+        },
+        {
+            label: "conclude",
+            handler: async (v) => {
+                return {
+                    prompt: "Give a meaningful conclusion for the selected text.",
+                };
             },
         },
         {
             label: "intro",
             handler: async (v) => {
-                return { status: true, content: v.join(",") };
-            },
-        },
-        {
-            label: "revert",
-            handler: async (v) => {
-                return { status: true, content: v.join(",") };
+                return {
+                    prompt: "Give some background to set the stage for the selected text.",
+                };
             },
         },
     ]);
     type Command = {
         label: string;
         alias?: string[];
-        handler: (command: string[]) => Promise<Response>;
+        handler: (command: string[]) => Promise<{ prompt: string }>;
     };
     var filteredCommands: Command[] = [];
     $: if (prompt) {
@@ -249,7 +302,7 @@
                     {/each}
                 </div>
             </div>
-            {#if prompt.startsWith("/") && !isLoading && !isStreaming}
+            {#if prompt && !isLoading && !isStreaming}
                 <div class="w-full">
                     <div class="flex flex-col justify-center items-start">
                         {#if filteredCommands.length}
@@ -273,7 +326,8 @@
                             </div>
                         {:else}
                             <div class="text-red-500 text-xs self-center">
-                                Command not found!
+                                Invalid action. Please start your command with
+                                '/' followed by a valid action.
                             </div>
                         {/if}
                     </div>
@@ -289,7 +343,7 @@
                 class:opacity-25={isLoading || isStreaming}
                 class="border-[0.1em] border-zinc-800 text-white text-md rounded-md block w-full p-2.5 outline-none focus:outline-none placeholder:text-zinc-500"
                 placeholder={enabled
-                    ? "Message Arthur"
+                    ? "Type / for commands"
                     : "Arthur AI not setup."}
                 required
             />

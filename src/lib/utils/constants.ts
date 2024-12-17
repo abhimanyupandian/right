@@ -69,4 +69,4 @@ export function getNewNotepadMetdata() {
     }
 }
 
-export const ARTHUR_ENABLED = false;
+export const ARTHUR_ENABLED = !false;
