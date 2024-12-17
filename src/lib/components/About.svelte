@@ -44,8 +44,8 @@
             <div>
                 Right is a distraction-free writing tool powered by AI, designed
                 to enhance focus and productivity. It is completely free to use,
-                with all data securely stored in your browser, ensuring privacy
-                and convenience.
+                with all data stored in your browser, ensuring privacy and
+                convenience.
             </div>
             <div class="text-xl text-zinc-600">Credits</div>
             <div>
@@ -64,7 +64,8 @@
                 > on the backend.
             </div>
             <div>
-                3. Currently AI capabilities are only supported in machines which have atleast 16 GB RAM and browsers which support WebGPU.
+                3. Currently AI capabilities are only supported in machines
+                which have atleast 16 GB RAM and browsers which support WebGPU.
             </div>
         </div>
     </div>
