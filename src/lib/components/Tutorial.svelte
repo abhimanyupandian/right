@@ -36,6 +36,17 @@
                 </div>
                 <div>Finder</div>
             </div>
+            <div class="flex flex-row items-center justify-between">
+                <div class="flex flex-row space-x-2">
+                    <div class="text-black bg-white py-1 px-2 rounded-md">
+                        select text
+                    </div>
+                    <div class="text-black bg-white py-1 px-2 rounded-md">
+                        cmd + /
+                    </div>
+                </div>
+                <div>Arthur AI</div>
+            </div>
             <div class="h-2"></div>
             <div class="text-zinc-400">Tags</div>
             <div class="flex flex-row items-center justify-between space-x-6">
@@ -45,7 +56,9 @@
                 <div>Notepad Name</div>
             </div>
             <div class="flex flex-row items-center justify-between space-x-6">
-                <div class="text-black bg-white py-1 px-2 rounded-md">{`>`}</div>
+                <div class="text-black bg-white py-1 px-2 rounded-md">
+                    {`>`}
+                </div>
                 <div>Chapter</div>
             </div>
             <div class="flex flex-row items-center justify-between space-x-6">
