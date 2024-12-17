@@ -1,7 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { getCaretCoordinates } from "$lib/utils/ui";
-    import { ARTHUR_ENABLED, Symbols } from "$lib/utils/constants";
+    import { Symbols } from "$lib/utils/constants";
     import { Progress } from "$lib/utils/progress";
     import {
         currentNotepad,
@@ -35,7 +35,6 @@
     var setupDone: boolean = false;
 
     function openChat() {
-        if (!ARTHUR_ENABLED) return;
         if ($selection.content.trim().length <= 1) return;
         isChatting = true;
         saveSelection(editorEl);
@@ -227,9 +226,7 @@
             <Nav bind:cursorPosition />
             <ContextViewer bind:isChatting></ContextViewer>
             <Editor bind:editorEl bind:isChatting />
-            {#if ARTHUR_ENABLED}
-                <Arthur bind:isChatting />
-            {/if}
+            <Arthur bind:isChatting />
         </div>
 
         <Stats bind:progressEl />

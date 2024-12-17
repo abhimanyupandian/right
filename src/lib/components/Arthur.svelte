@@ -1,6 +1,6 @@
 <script lang="ts">
     import { arthur, Arthur } from "$lib/utils/arthur";
-    import { ARTHUR_ENABLED, Symbols } from "$lib/utils/constants";
+    import { Symbols } from "$lib/utils/constants";
     import { selectionTracker } from "$lib/utils/stores";
     import { clickOutside } from "$lib/utils/ui";
     import { writable } from "svelte/store";
@@ -13,7 +13,7 @@
     var messagesEl: HTMLElement;
     export let prompt: string = "";
 
-    let enabled: boolean = $arthur.state === true && ARTHUR_ENABLED;
+    let enabled: boolean = $arthur.state === true;
     export let isChatting: boolean;
 
     const messages = writable<

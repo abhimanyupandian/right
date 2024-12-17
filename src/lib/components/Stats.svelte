@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ARTHUR_ENABLED, Symbols } from "$lib/utils/constants";
+	import { Symbols } from "$lib/utils/constants";
 	import { currentNotepad, stats } from "$lib/utils/stores";
 	import TimeAgo from "javascript-time-ago";
 	import { onMount } from "svelte";
@@ -84,25 +84,23 @@
 				</div>
 			</tooltip>
 		{/if}
-		{#if ARTHUR_ENABLED}
-			<button
-				on:mouseenter={() => (showArthurStatus = true)}
-				on:mouseleave={() => (showArthurStatus = false)}
-				on:click={() => (showArthurSettings = true)}
-				class="opacity-50 hover:opacity-100 outline-none"
-			>
-				{#if $arthur.state === "loading"}
-					<div class="w-3 h-3 rounded-full bg-[orange]"></div>
-				{:else}
-					<div
-						class:bg-green-500={$arthur.state == true}
-						class:bg-yellow-500={$arthur.state == "unsupported"}
-						class:bg-red-500={!$arthur.state}
-						class="w-3 h-3 rounded-full"
-					></div>
-				{/if}
-			</button>
-		{/if}
+		<button
+			on:mouseenter={() => (showArthurStatus = true)}
+			on:mouseleave={() => (showArthurStatus = false)}
+			on:click={() => (showArthurSettings = true)}
+			class="opacity-50 hover:opacity-100 outline-none"
+		>
+			{#if $arthur.state === "loading"}
+				<div class="w-3 h-3 rounded-full bg-[orange]"></div>
+			{:else}
+				<div
+					class:bg-green-500={$arthur.state == true}
+					class:bg-yellow-500={$arthur.state == "unsupported"}
+					class:bg-red-500={!$arthur.state}
+					class="w-3 h-3 rounded-full"
+				></div>
+			{/if}
+		</button>
 	</div>
 </div>
 

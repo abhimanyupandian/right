@@ -1,6 +1,5 @@
 import { CreateMLCEngine, MLCEngine, type ChatCompletionMessageParam, type InitProgressReport } from "@mlc-ai/web-llm";
 import { get, writable } from "svelte/store";
-import { ARTHUR_ENABLED } from "./constants";
 
 export let arthur = writable<{
     state: boolean | 'loading' | 'unsupported',
@@ -110,7 +109,6 @@ This is the text the user has selected: ${context}
     }
 
     static async restore() {
-        if (!ARTHUR_ENABLED) return;
         const model = get(currentModel);
         if (!model) return;
 

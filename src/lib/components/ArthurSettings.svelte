@@ -7,7 +7,6 @@
         AVAILABLE_MODELS,
         modelDownloadProgress,
     } from "$lib/utils/arthur";
-    import { ARTHUR_ENABLED } from "$lib/utils/constants";
     import { onMount } from "svelte";
 
     export var show: boolean = false;
@@ -55,7 +54,7 @@
     });
 </script>
 
-{#if show && ARTHUR_ENABLED}
+{#if show}
     <div
         bind:this={overlayEl}
         class="fixed z-10 opacity-50 bg-black inset-0 justify-center items-center hidden md:flex"

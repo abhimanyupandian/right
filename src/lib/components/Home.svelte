@@ -2,7 +2,7 @@
 	import FileHunter from "$lib/components/FileHunter.svelte";
 	import Delete from "$lib/icons/Delete.svelte";
 	import New from "$lib/icons/New.svelte";
-	import { ARTHUR_ENABLED, getNewNotepadMetdata } from "$lib/utils/constants";
+	import { getNewNotepadMetdata } from "$lib/utils/constants";
 	import { db, type Notepad } from "$lib/utils/db";
 	import { recentsRefresher } from "$lib/utils/stores";
 	import { onMount } from "svelte";
@@ -10,11 +10,14 @@
 	import ArthurSettings from "$lib/components/ArthurSettings.svelte";
 	import TutorialIcon from "$lib/icons/Tutorial.svelte";
 	import Tutorial from "./Tutorial.svelte";
+	import Heart from "$lib/icons/Heart.svelte";
+	import About from "./About.svelte";
 
 	var savedNotepads: Notepad[] = [];
 	var showFileHunter: boolean = false;
 	var showArthurSettings: boolean = false;
 	var showTutorial: boolean = false;
+	var showAbout: boolean = false;
 
 	function onNewNotepad() {
 		var metadata = getNewNotepadMetdata();
@@ -64,11 +67,10 @@
 	};
 </script>
 
-{#if ARTHUR_ENABLED}
-	<ArthurSettings bind:show={showArthurSettings}></ArthurSettings>
-{/if}
+<ArthurSettings bind:show={showArthurSettings}></ArthurSettings>
 <Tutorial bind:show={showTutorial}></Tutorial>
 <FileHunter bind:show={showFileHunter}></FileHunter>
+<About bind:show={showAbout}></About>
 
 {#if loadingDone}
 	<div
@@ -181,24 +183,27 @@
 				</div>
 				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<!-- svelte-ignore a11y_no_static_element_interactions -->
-				{#if ARTHUR_ENABLED}
-					<div
-						class="flex flex-row justify-start space-x-2 items-center"
-					>
-						<div class="stroke-blue-500">
-							<Wand></Wand>
-						</div>
-						<div
-							on:click={() => (showArthurSettings = true)}
-							class=" text-blue-500 rounded-sm cursor-pointer"
-						>
-							{`Arthur AI`}
-						</div>
+				<div class="flex flex-row justify-start space-x-2 items-center">
+					<div class="stroke-blue-500">
+						<Wand></Wand>
 					</div>
-				{/if}
+					<div
+						on:click={() => (showArthurSettings = true)}
+						class=" text-blue-500 rounded-sm cursor-pointer"
+					>
+						{`Arthur AI`}
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>
 {:else}
 	<div id="screen"></div>
 {/if}
+
+<button
+	on:click={() => (showAbout = true)}
+	class="absolute bottom-4 right-4 p-4 fill-red-500 rounded-md bg-black opacity-25 hover:opacity-100 cursor-pointer"
+>
+	<Heart></Heart>
+</button>

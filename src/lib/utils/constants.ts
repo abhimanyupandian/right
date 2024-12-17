@@ -68,5 +68,3 @@ export function getNewNotepadMetdata() {
         author: ""
     }
 }
-
-export const ARTHUR_ENABLED = !false;

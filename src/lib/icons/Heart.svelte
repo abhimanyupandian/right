@@ -1,0 +1,16 @@
+<svg
+    width="20px"
+    height="20px"
+    viewBox="0 0 16 16"
+    xmlns="http://www.w3.org/2000/svg"
+    ><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g
+        id="SVGRepo_tracerCarrier"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+    ></g><g id="SVGRepo_iconCarrier">
+        <path
+            d="M8 8V5a3 3 0 1 0-6 0v9h9a3 3 0 0 0 0-6H8zm2-2h1a5 5 0 0 1 0 10H0V5a5 5 0 1 1 10 0v1z"
+            fill-rule="evenodd"
+        ></path>
+    </g></svg
+>
