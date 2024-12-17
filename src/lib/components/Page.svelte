@@ -101,7 +101,7 @@
                 if (event.metaKey && event.key === "/") {
                     event.preventDefault();
                     openChat();
-                } else if (event.key === "Escape") closeChat();
+                }
             }
         });
 

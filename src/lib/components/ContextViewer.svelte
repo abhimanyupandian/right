@@ -16,11 +16,6 @@
             `<span class="opacity-25">${$selection.after}</span>` +
             "</div>";
     }
-    function handleKeyDown(event: any) {
-        if (event.key === "Escape") {
-            isChatting = false;
-        }
-    }
 
     $: if (contentEl) {
         contentEl.scrollTo({ top: $selectionTracker.scrollTop });
@@ -34,11 +29,6 @@
         //     inline: "center",
         // });
     }
-
-    onMount(() => {
-        document.addEventListener("keydown", handleKeyDown);
-        return () => document.removeEventListener("keydown", handleKeyDown);
-    });
 </script>
 
 {#if isChatting}

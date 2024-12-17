@@ -17,7 +17,11 @@
     export let isChatting: boolean;
 
     const messages = writable<
-        { source: "user" | "ai"; message: string; timestamp: string }[]
+        {
+            source: "user" | "ai" | "context";
+            message: string;
+            timestamp: string;
+        }[]
     >([]);
 
     type Response = { status: boolean; content?: string; id?: string };
@@ -38,12 +42,14 @@
                             messageDiv.textContent +=
                                 chunk.choices[0]?.delta.content || "";
                             if (messagesEl) {
-                                messagesEl.scrollTop = messagesEl.scrollHeight;
+                                scrollToBottom();
                             }
                             if (chunk.usage) {
                                 reset();
                             }
                         }
+                        $messages[$messages.length - 1].message =
+                            messageDiv.textContent;
                     }, 100); // Message DOM must be rendered.
                 }
             });
@@ -81,17 +87,27 @@
         isStreaming = false;
     }
 
+    function scrollToBottom() {
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
     async function handleKeyPress(e: any) {
         if (!prompt.startsWith("/")) return;
         var keyCode = e.code || e.key;
         var resp: Response = { status: false };
         if (keyCode == "Enter" && prompt) {
+            scrollToBottom();
             if (prompt.startsWith("/")) {
                 resp = await handleCommand();
             } else {
                 resp = await handleFreeText();
             }
             if (resp.status) {
+                $messages.push({
+                    source: "context",
+                    message: $selectionTracker.content,
+                    timestamp: resp.id!,
+                });
                 $messages.push({
                     source: "user",
                     message: prompt,
@@ -105,6 +121,7 @@
                 });
                 $messages = $messages;
             }
+            scrollToBottom();
         }
     }
 
@@ -149,13 +166,14 @@
                                 messageDiv.textContent +=
                                     chunk.choices[0]?.delta.content || "";
                                 if (messagesEl) {
-                                    messagesEl.scrollTop =
-                                        messagesEl.scrollHeight;
+                                    scrollToBottom();
                                 }
                                 if (chunk.usage) {
                                     reset();
                                 }
                             }
+                            $messages[$messages.length - 1].message =
+                                messageDiv.textContent;
                         }, 100); // Message DOM must be rendered.
                     }
                 });
@@ -179,20 +197,23 @@
             if (event.metaKey && event.key === "/") {
                 event.preventDefault();
                 chatFocused = true;
-            } else if (event.key === "Escape") isChatting = false;
+            } else if (event.key === "Escape" && !isLoading && !isStreaming) {
+                isChatting = false;
+            }
         });
     } else {
         enabled = false;
         chatFocused = false;
-        $messages = [];
     }
 
     $: if (chatFocused && promptEl) {
         promptEl.focus();
+        scrollToBottom();
     }
 
     $: if (enabled && promptEl) {
         promptEl.focus();
+        scrollToBottom();
     }
 
     const commands = writable<Command[]>([
@@ -287,7 +308,18 @@
                                     </div>
                                 </div>
                             </div>
-                        {:else}
+                        {:else if each.source == "context"}
+                            <div
+                                class="flex flex-row items-center justify-end w-full opacity-10 hover:opacity-100"
+                            >
+                                <div
+                                    id={`CONTEXT:${each.timestamp}`}
+                                    class="bubble p-4 py-2 rounded-lg text-white"
+                                >
+                                    {each.message}
+                                </div>
+                            </div>
+                        {:else if each.source == "user"}
                             <div
                                 class="flex flex-row items-center justify-end w-full"
                             >
