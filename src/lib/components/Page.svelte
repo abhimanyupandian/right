@@ -4,13 +4,13 @@
     import { Symbols } from "$lib/utils/constants";
     import { Progress } from "$lib/utils/progress";
     import {
-        currentNotepad,
+        currentDocument,
         index,
         selection,
         selectionTracker,
         stats,
     } from "$lib/utils/stores";
-    import Stats from "$lib/components/Stats.svelte";
+    import Stats from "$lib/components/Stats/PageStats.svelte";
     import Nav from "$lib/components/Nav.svelte";
     import Editor from "$lib/components/Editor.svelte";
     import { db } from "$lib/utils/db";
@@ -152,10 +152,10 @@
     }
 
     function onOpenNotepad() {
-        db.notepad
+        db.document
             .get(notepadId ?? $page.url.searchParams.get("id") ?? "")
             .then((notepad) => {
-                if (notepad) $currentNotepad = notepad;
+                if (notepad) $currentDocument = notepad;
                 loadingDone = true;
             });
     }
@@ -176,7 +176,7 @@
     }
 </script>
 
-{#if !$currentNotepad}
+{#if !$currentDocument}
     {#if loadingDone}
         <NotFound></NotFound>
     {:else}

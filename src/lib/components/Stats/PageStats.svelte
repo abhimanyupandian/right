@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { Symbols } from "$lib/utils/constants";
-	import { currentNotepad, stats } from "$lib/utils/stores";
+	import { currentDocument, stats } from "$lib/utils/stores";
 	import TimeAgo from "javascript-time-ago";
 	import { onMount } from "svelte";
 	import { get } from "svelte/store";
 	import en from "javascript-time-ago/locale/en";
 	import { arthur } from "$lib/utils/arthur";
-	import ArthurSettings from "./ArthurSettings.svelte";
+	import ArthurSettings from "../ArthurSettings.svelte";
 
 	export let progressEl: any;
 
@@ -16,7 +16,7 @@
 	TimeAgo.addLocale(en);
 	const timeAgo = new TimeAgo("en-US");
 	var time: string = getCurrentTime();
-	var lastSaveTime: number = get(currentNotepad).modifiedOn;
+	var lastSaveTime: number = get(currentDocument).modifiedOn;
 
 	function getCurrentTime() {
 		const now = new Date();
@@ -28,7 +28,7 @@
 	onMount(() => {
 		var clock = setInterval(() => {
 			time = getCurrentTime();
-			lastSaveTime = get(currentNotepad).modifiedOn;
+			lastSaveTime = get(currentDocument).modifiedOn;
 		}, 1000);
 		return () => {
 			clearInterval(clock);
@@ -41,33 +41,36 @@
 	class="stats shadow-sm shadow-gray-400 h-[32px] px-3 flex flex-row w-[100vw] fixed bottom-0 select-none justify-between items-center min-w-[100vw]"
 >
 	<div class="flex flex-row space-x-2 items-center text-xs">
-		<div bind:this={progressEl}></div>
-		<div class="w-12 stats-text">{$stats.percent}%</div>
-		<span class="stats-text">{Symbols.DOT}</span>
-		<div id="details" class="flex-row space-x-2 text-xs hidden md:flex">
-			<div
-				class="flex flex-row space-x-2 items-center text-xs stats-text"
-			>
-				<div class="flex flex-row space-x-1">
-					<div>{$stats.totalW} W,</div>
-					<div>{$stats.totalC} C</div>
-				</div>
-				{#if $stats.selectedW && $stats.selectedC}
-					<div class="flex flex-row space-x-1">
-						(
-						<div>{$stats.selectedW} W,</div>
-						<div>{$stats.selectedC} C</div>
-						)
-					</div>
-				{/if}
-			</div>
-			<span class="stats-text">{Symbols.DOT}</span>
-			<span class="stats-text">{$currentNotepad.name}</span>
-			<span class="stats-text">{Symbols.DOT}</span>
-			<span class="stats-text"
-				>Modified {timeAgo.format(new Date(lastSaveTime))}
-			</span>
+		<div class="flex flex-row space-x-4 w-[160px]">
+			<div bind:this={progressEl}></div>
+			<div class="stats-text">{$stats.percent}%</div>
 		</div>
+	</div>
+	<div id="details" class="flex-row space-x-2 text-xs hidden md:flex">
+		<div class="flex flex-row space-x-4 items-center text-xs stats-text">
+			<div class="flex flex-row space-x-1">
+				<div>{$stats.totalW} W,</div>
+				<div>{$stats.totalC} C</div>
+			</div>
+			{#if $stats.selectedW && $stats.selectedC}
+				<div class="flex flex-row space-x-1">
+					(
+					<div>{$stats.selectedW} W,</div>
+					<div>{$stats.selectedC} C</div>
+					)
+				</div>
+			{/if}
+		</div>
+		<span class="stats-text">{Symbols.DOT}</span>
+		<span class="stats-text"
+			>{$currentDocument.name.length <= 50
+				? $currentDocument.name
+				: `${$currentDocument.name.slice(0, 50)}...`}</span
+		>
+		<span class="stats-text">{Symbols.DOT}</span>
+		<span class="stats-text"
+			>Modified {timeAgo.format(new Date(lastSaveTime))}
+		</span>
 	</div>
 	<div class="text-xs flex flex-row justify-between items-start space-x-3">
 		<span class="stats-text">{time}</span>

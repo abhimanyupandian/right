@@ -58,6 +58,8 @@
 		"electron-squirrel-startup": "^1.0.1",
 		"electron-window-state": "^5.0.3",
 		"javascript-time-ago": "^2.5.11",
+		"pdfjs-dist": "^4.10.38",
+		"pdfjs-viewer-element": "^2.7.0",
 		"short-uuid": "^5.2.0"
 	}
 }
