@@ -1,6 +1,6 @@
 import { writable } from "svelte/store";
 import { type IndexEntry, type Stats } from "./types";
-import { type Notepad } from "./db";
+import { type Document } from "./db";
 
 function createSessionState(label: string) {
     const { subscribe, set, update } = writable<string>("");
@@ -14,7 +14,7 @@ function createSessionState(label: string) {
 
 export const recentsRefresher = createSessionState('recentsRefresher');
 
-export const currentNotepad = writable<Notepad>();
+export const currentDocument = writable<Document>();
 export const index = writable<IndexEntry[]>([]);
 export const stats = writable<Stats>({
     percent: "0.0",

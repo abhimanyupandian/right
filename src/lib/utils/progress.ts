@@ -1,31 +1,44 @@
 import { get } from "svelte/store";
 import { Delimeters, Symbols } from "./constants";
-import { currentNotepad, index, stats } from "./stores";
+import { currentDocument, index, stats } from "./stores";
 import type { IndexEntry, IndexType } from "./types";
 
 const getDefaultProgressHtml = (v: string) => `<span class="opacity-15">${v}</span>`;
 
+export function roundPercent(value: number) {
+    var percent = (
+        Math.round(
+            Math.min(1, value) *
+            1000,
+        ) / 10
+    ).toFixed(1);
+    return percent;
+}
+
 export class Progress {
-    static get(editor: any) {
-        var scrollDistance = editor.scrollTop;
-        var scrollMax = editor.scrollHeight - editor.offsetHeight;
-        var ratio = Math.min(
-            1,
-            scrollMax === 0 ? 0 : scrollDistance / scrollMax,
-        );
-        var percent = (
-            Math.round(
-                Math.min(1, scrollMax === 0 ? 0 : scrollDistance / scrollMax) *
-                1000,
-            ) / 10
-        ).toFixed(1);
+    static get(target: any) {
+        if (target.scrollTop != undefined) { // is notepad
+            var scrollDistance = target.scrollTop;
+            var scrollMax = target.scrollHeight - target.offsetHeight;
+            var ratio = Math.min(
+                1,
+                scrollMax === 0 ? 0 : scrollDistance / scrollMax,
+            );
+            var percent_ = roundPercent(scrollMax === 0 ? 0 : scrollDistance / scrollMax);
+        } else {
+            var percent_ = target as string;
+            var ratio = Math.min(
+                1,
+                parseFloat(percent_) / 100,
+            );
+        }
         var html = Array.from({ length: 10 }, (_, i) => Symbols.DOT)
             .map((v, i) => {
                 return i < ratio * 10 ? `<b>${v}</b>` : getDefaultProgressHtml(v);
             })
             .join(Symbols.SPACE);
 
-        return { percent, html }
+        return { percent: percent_, html }
     }
     static init(target: any) {
         if (!target) return;
@@ -51,8 +64,11 @@ export class Progress {
         function isTag(line: string) {
             return line.startsWith(Symbols.AT);
         }
-        currentNotepad.subscribe((c) => {
-            if (!c) return;
+        currentDocument.subscribe((c) => {
+            if (!c || c.type !== 'notepad') {
+                var stats_ = get(stats);
+                return;
+            }
             var index_: IndexEntry[] = [];
             var line = 0;
             var lastIndex = 0;
@@ -64,7 +80,7 @@ export class Progress {
             stats_.absC = 0;
             stats_.absW = 0;
 
-            for (var eachLine of c.content.split(Symbols.EOL)) {
+            for (var eachLine of (c.content as string).split(Symbols.EOL)) {
                 var cCount = eachLine.length;
                 var wCount = eachLine
                     .split(Symbols.SPACE)

@@ -2,8 +2,11 @@
 	import FileHunter from "$lib/components/FileHunter.svelte";
 	import Delete from "$lib/icons/Delete.svelte";
 	import New from "$lib/icons/New.svelte";
-	import { getNewNotepadMetdata } from "$lib/utils/constants";
-	import { db, type Notepad } from "$lib/utils/db";
+	import {
+		getNewNotepadMetdata,
+		getNewPdfMetadata,
+	} from "$lib/utils/constants";
+	import { db, type Document } from "$lib/utils/db";
 	import { recentsRefresher } from "$lib/utils/stores";
 	import { onMount } from "svelte";
 	import Wand from "$lib/icons/Wand.svelte";
@@ -13,7 +16,7 @@
 	import Heart from "$lib/icons/Heart.svelte";
 	import About from "./About.svelte";
 
-	var savedNotepads: Notepad[] = [];
+	var savedDocuments: Document[] = [];
 	var showFileHunter: boolean = false;
 	var showArthurSettings: boolean = false;
 	var showTutorial: boolean = false;
@@ -21,21 +24,32 @@
 
 	function onNewNotepad() {
 		var metadata = getNewNotepadMetdata();
-		db.notepad.add(metadata);
+		db.document.add(metadata);
 		refreshRecents();
 		window.open(`/?id=${metadata.id}`, "_blank");
 	}
 
-	async function getSavedNotepads() {
-		var notepads = (await db.notepad.toArray())
+	function onOpenPdf(e: any) {
+		const file = e.target.files[0];
+		if (!file) return;
+		var metadata = getNewPdfMetadata(file);
+		db.document.add(metadata);
+		refreshRecents();
+		setTimeout(() => {
+			window.open(`/?pdf=${metadata.id}`, "_blank");
+		}, 500);
+	}
+
+	async function getSavedDocuments() {
+		var documents = (await db.document.toArray())
 			.sort((a, b) => b.modifiedOn - a.modifiedOn)
 			.splice(0, 5);
 		loadingDone = true;
-		return notepads;
+		return documents;
 	}
 
 	function refreshRecents() {
-		getSavedNotepads().then((v) => (savedNotepads = v));
+		getSavedDocuments().then((v) => (savedDocuments = v));
 	}
 
 	function onShowMore() {
@@ -61,7 +75,7 @@
 				isConfirming = isConfirming;
 			}, 2000);
 		} else {
-			db.notepad.delete(id);
+			db.document.delete(id);
 			refreshRecents();
 		}
 	};
@@ -114,25 +128,49 @@
 						{`New Notepad`}
 					</div>
 				</div>
+				<!-- svelte-ignore a11y_click_events_have_key_events -->
+				<!-- svelte-ignore a11y_no_static_element_interactions -->
+				<div class="flex flex-row justify-start space-x-2 items-center">
+					<div>
+						<New></New>
+					</div>
+					<label
+						for="openPdf"
+						class=" text-blue-500 rounded-sm cursor-pointer"
+					>
+						{`Open PDF`}
+					</label>
+					<input
+						id="openPdf"
+						type="file"
+						accept="application/pdf"
+						class="invisible"
+						on:change={onOpenPdf}
+					/>
+				</div>
 				<div class="h-2"></div>
 				<div class="">
-					{#if savedNotepads.length}
+					{#if savedDocuments.length}
 						<div class="text-xl opacity-25 select-none">
 							Recents
 						</div>
-						{#each savedNotepads as each (each.id)}
+						{#each savedDocuments as each (each.id)}
 							<!-- svelte-ignore a11y_no_static_element_interactions -->
 							<div
 								on:mouseenter={() => (hoveringOver = each.id)}
 								on:mouseleave={() => (hoveringOver = "")}
-								class="flex flex-row space-x-2 items-center"
+								class="flex flex-row space-x-8 items-center"
 							>
 								<a
-									href={`/?id=${each.id}`}
+									href={each.type === "notepad"
+										? `/?id=${each.id}`
+										: `/?pdf=${each.id}`}
 									target="_blank"
-									class=" text-blue-500 rounded-sm cursor-pointer text-wrap whitespace-break-spaces"
+									class="max-w-[480px] text-blue-500 rounded-sm cursor-pointer text-wrap whitespace-break-spaces"
 								>
-									{each.name}
+									{each.name.length <= 50
+										? each.name
+										: `${each.name.slice(0, 60)}...`}
 								</a>
 								<span class="text-xs opacity-30">
 									{new Date(each.modifiedOn).toLocaleString()}
@@ -153,7 +191,7 @@
 								{/if}
 							</div>
 						{/each}
-						{#if savedNotepads.length > 2}
+						{#if savedDocuments.length > 2}
 							<!-- svelte-ignore a11y_click_events_have_key_events -->
 							<!-- svelte-ignore a11y_no_static_element_interactions -->
 							<div

@@ -1,6 +1,7 @@
 // place files you want to import through the `$lib` alias in this folder.
 
 import type { IndexType, TagType } from "./types";
+import type { Document } from './db';
 import uuid from "short-uuid";
 
 export const Defaults = {
@@ -56,15 +57,34 @@ export const DefaultTheme = {
 
 export const PageContent = ``
 
-export function getNewNotepadMetdata() {
+export function getNewNotepadMetdata(): Document {
     return {
         id: uuid.generate(),
+        type: 'notepad',
         content: `@title ${Defaults.notepadName}`,
         createdOn: Date.now(),
         modifiedOn: Date.now(),
         tags: [],
         name: Defaults.notepadName,
         notes: [],
-        author: ""
+        author: "",
+        totalPages: 0,
+        currentPage: 1
+    }
+}
+
+export function getNewPdfMetadata(file: File): Document {
+    return {
+        id: uuid.generate(),
+        type: 'pdf',
+        content: file,
+        createdOn: Date.now(),
+        modifiedOn: Date.now(),
+        tags: [],
+        name: file.name,
+        notes: [],
+        author: "",
+        totalPages: 0,
+        currentPage: 1
     }
 }

@@ -1,5 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie';
-import { currentNotepad, recentsRefresher } from './stores';
+import { currentDocument as currentDocument, recentsRefresher } from './stores';
 import { Defaults, Symbols, Tags } from './constants';
 import { get } from 'svelte/store';
 import type { TagType } from './types';
@@ -14,30 +14,33 @@ interface Note {
     updatedOn: number
 }
 
-interface Notepad {
+export interface Document {
     id: string;
+    type: "notepad" | "pdf",
     name: string;
-    content: string;
+    content: string | Blob;
     createdOn: number;
     modifiedOn: number;
     notes: Note[],
     author: string,
-    tags: string[]
+    tags: string[],
+    totalPages: number,
+    currentPage: number
 }
 
 const db = new Dexie('right-db') as Dexie & {
-    notepad: EntityTable<
-        Notepad,
+    document: EntityTable<
+        Document,
         'id'
     >;
 };
 
 // Schema declaration:
 db.version(1).stores({
-    notepad: '++id, name, age' // primary key "id" (for the runtime!)
+    document: '++id, name, age' // primary key "id" (for the runtime!)
 });
 
-export type { Notepad, Note };
+export type { Document as Notepad, Note };
 export { db };
 
 
@@ -52,35 +55,38 @@ export class Saver {
         return (line.split(delimeter)[1] ?? "").trim();
     }
 
-    private static doSave() {
-        var currentNotepad_ = get(currentNotepad);
-        currentNotepad_.modifiedOn = Date.now();
-        currentNotepad.set(currentNotepad_);
-        var firstLine = currentNotepad_.content.split(Symbols.EOL)[0];
+    private static doSave(pdfContent?: Blob) {
+        var currentDocument_ = get(currentDocument);
+        currentDocument_.modifiedOn = Date.now();
+        currentDocument.set(currentDocument_);
+        if (currentDocument_.type === 'notepad') {
+            var firstLine = (currentDocument_.content as string).split(Symbols.EOL)[0];
 
-        if (firstLine?.startsWith("@title")) {
-            var title = Saver.getTagValue(firstLine, "title").substring(0, 100);
-        } else var title = Defaults.notepadName;
+            if (firstLine?.startsWith("@title")) {
+                var title = Saver.getTagValue(firstLine, "title").substring(0, 100);
+            } else var title = Defaults.notepadName;
 
-        if (title) currentNotepad_.name = title;
-        else currentNotepad_.name = Defaults.notepadName;
-
-        db.notepad
+            if (title) currentDocument_.name = title;
+            else currentDocument_.name = Defaults.notepadName;
+        } else {
+            currentDocument_.content = pdfContent as Blob;
+        }
+        db.document
             .where("id")
-            .equals(currentNotepad_.id)
+            .equals(currentDocument_.id)
             .modify((_, ref) => {
-                ref.value = currentNotepad_;
+                ref.value = currentDocument_;
             });
 
         recentsRefresher.broadcast.postMessage(true);
     }
 
 
-    static save(options: { delay?: number, callback?: () => void } = { delay: 1, callback: () => { } }) {
+    static save(options: { content?: Blob, delay?: number, callback?: () => void } = { delay: 1, callback: () => { } }) {
         Saver.clear();
         return (function () {
             Saver.timeoutId = setTimeout(() => {
-                Saver.doSave();
+                Saver.doSave(options.content);
                 if (options.callback) options.callback();
             }, options.delay ?? 1);
         })();
