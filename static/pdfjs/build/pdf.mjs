@@ -2286,7 +2286,11 @@ class AnnotationEditorUIManager {
   }
   #onSelectEnd(methodOfCreation = "") {
     if (this.#mode === AnnotationEditorType.HIGHLIGHT) {
-      this._eventBus.dispatch("selectedtext", document.getSelection().toString());
+      console.log(this.#mainHighlightColorPicker)
+      this._eventBus.dispatch("selectedtext", {
+        text: document.getSelection().toString(),
+        color: "test"
+      });
       this.highlightSelection(methodOfCreation);
     } else if (this.#enableHighlightFloatingButton) {
       this.#displayHighlightToolbar();
@@ -2879,6 +2883,9 @@ class AnnotationEditorUIManager {
       isEmpty: this.#isEmpty()
     });
     this._editorUndoBar?.hide();
+    this._eventBus.dispatch("updatepagehiglights", { 
+      pageNumber : -1
+    });
   }
   redo() {
     this.#commandManager.redo();
@@ -2886,6 +2893,9 @@ class AnnotationEditorUIManager {
       hasSomethingToUndo: true,
       hasSomethingToRedo: this.#commandManager.hasSomethingToRedo(),
       isEmpty: this.#isEmpty()
+    });
+    this._eventBus.dispatch("updatepagehiglights", { 
+      pageNumber : -1
     });
   }
   addCommands(params) {
@@ -2911,6 +2921,9 @@ class AnnotationEditorUIManager {
     return false;
   }
   delete() {
+    this._eventBus.dispatch("updatepagehiglights", { 
+      pageNumber : this.#currentPageIndex
+    });
     this.commitOrRemove();
     const drawingEditor = this.currentLayer?.endDrawingSession(true);
     if (!this.hasSelection && !drawingEditor) {
@@ -17542,6 +17555,7 @@ class ColorPicker {
   }
   #colorSelect(color, event) {
     event.stopPropagation();
+    this.#eventBus.dispatch("colorchange", color);
     this.#eventBus.dispatch("switchannotationeditorparams", {
       source: this,
       type: this.#type,

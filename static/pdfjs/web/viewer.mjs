@@ -14468,6 +14468,9 @@ const PDFViewerApplication = {
     }), {
       signal
     });
+    eventBus.on("scrolltooffset", (e) => {
+      mainContainer.scrollBy(0, e.details[1] - 100);
+    });
     window.addEventListener("updatefromsandbox", evt => {
       eventBus.dispatch("updatefromsandbox", {
         source: window,

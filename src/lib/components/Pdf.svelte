@@ -8,7 +8,7 @@
     import { Progress, roundPercent } from "$lib/utils/progress";
     import { writable } from "svelte/store";
     import * as mupdfjs from "mupdf/mupdfjs";
-    
+
     var viewerApp: any;
 
     var loadingDone: boolean = false;
@@ -24,25 +24,88 @@
         return document;
     }
 
-    async function getAllAnnotations(file: Blob) {
+    function getCenter(rect: number[]) {
+        const [x, y, width, height] = rect;
+        const centerX = x + width / 2;
+        const centerY = y + height / 2;
+        return [centerX, centerY];
+    }
+
+    function componentToHex(c: number) {
+        var hex = c.toString(16);
+        return hex.length == 1 ? "00" + hex : hex;
+    }
+
+    function rgbToClass(r: number, g: number, b: number) {
+        console.log(r, g, b);
+        const hex = (
+            "#" +
+            componentToHex(Math.trunc(r)) +
+            componentToHex(Math.trunc(g)) +
+            componentToHex(Math.trunc(b))
+        ).toUpperCase();
+        console.log(hex);
+        return hexToClass(hex);
+    }
+
+    function hexToClass(hex: string) {
+        if (hex === "#FFFF98" || hex === "#FFFF99") return "yellow";
+        if (hex === "#53FFBC" || hex === "#54FFBC") return "green";
+        if (hex === "#80EBFF" || hex === "#7FEAFF") return "blue";
+        if (hex === "#FFCBE6" || hex === "#FFCCE5") return "pink";
+        if (hex === "#FF4F5F" || hex === "#FF4F5E") return "red";
+        return "yellow";
+    }
+
+    async function getAndUpdateAnnotationsForPage(
+        document: mupdfjs.PDFDocument,
+        pageNumber: number,
+    ) {
+        const page = document.loadPage(pageNumber);
+        const annots = page.getAnnotations();
+
+        pageNumber += 1;
+
+        const _annotsCollected = [];
+        if (annots.length) {
+            for (var each of annots) {
+                const note = each.getContents().trim();
+                if (!note) continue;
+                var color: any | string = each.getColor();
+                color = rgbToClass(
+                    color[0] * 255,
+                    color[1]! * 255,
+                    color[2]! * 255,
+                );
+                console.log(color, note);
+                _annotsCollected.push({
+                    note,
+                    pageNumber,
+                    location: getCenter(each.getBounds()),
+                    color,
+                });
+            }
+        }
+
+        $notes.set(pageNumber, _annotsCollected);
+        $notes = $notes;
+    }
+
+    async function getAllAnnotations(file: Blob, pageNumber?: number) {
         const document = await getDocument(file);
+
+        if (!pageNumber) pageNumber = -1;
+
+        // Update only one page
+        if (pageNumber >= 0) {
+            getAndUpdateAnnotationsForPage(document, pageNumber);
+            return;
+        }
+
+        // Update all pages
         var i = 0;
         while (i < document.countPages()) {
-            const page = document.loadPage(i);
-            const annots = page.getAnnotations();
-            if (annots.length) {
-                for (var each of annots) {
-                    notes.update((e) => {
-                        e.push({
-                            note: each.getContents().trim(),
-                            pageNumber: i + 1,
-                            location: 0,
-                        });
-                        return e;
-                    });
-                }
-                // console.log(`Page=${i + 1}, Annotations=${annots}`);
-            }
+            getAndUpdateAnnotationsForPage(document, i);
             i++;
         }
     }
@@ -82,18 +145,30 @@
     }
 
     const notes = writable<
-        { note: string; pageNumber: number; location: number }[]
-    >([]);
+        Map<
+            number,
+            {
+                note: string;
+                pageNumber: number;
+                location: number[];
+                color: string;
+            }[]
+        >
+    >(new Map());
+
+    var shadowRoot: ShadowRoot;
+    var iframe: any;
+    const color = writable<string>("");
 
     onMount(async () => {
         Progress.init(progressEl);
         const viewer: any = document.querySelector("pdfjs-viewer-element")!;
         viewerApp = await viewer.initialize();
 
-        const shadowRoot = document.querySelector(
+        shadowRoot = document.querySelector(
             "pdfjs-viewer-element",
         )?.shadowRoot!;
-        const iframe: any = shadowRoot.querySelector("iframe")!;
+        iframe = shadowRoot.querySelector("iframe")!;
 
         var resetScrollDone: boolean = false;
 
@@ -128,17 +203,32 @@
             setTimeout(() => (loadingDone = true), 100); // so that there is no flash
         }
 
-        viewerApp.eventBus.on("selectedtext", (selectedText: string) => {
-            if (!selectedText) return;
-            notes.update((e) => {
-                e.push({
-                    note: selectedText.trim(),
-                    pageNumber: $currentDocument.currentPage,
-                    location: 0,
-                });
-                return e;
-            });
+        viewerApp.eventBus.on("colorchange", (e: string) => {
+            $color = e;
+            console.log($color);
         });
+
+        viewerApp.eventBus.on(
+            "selectedtext",
+            (details: { text: string; color: string }) => {
+                if (!details.text) return;
+                notes.update((e) => {
+                    if (!e.get($currentDocument.currentPage)) {
+                        e.set($currentDocument.currentPage, []);
+                    }
+                    e.set($currentDocument.currentPage, [
+                        ...(e.get($currentDocument.currentPage) ?? []),
+                        {
+                            note: details.text.trim(),
+                            pageNumber: $currentDocument.currentPage,
+                            location: [],
+                            color: hexToClass($color.toUpperCase()),
+                        },
+                    ]);
+                    return e;
+                });
+            },
+        );
 
         /** LOADING DOCUMENT */
         db.document
@@ -155,6 +245,16 @@
             $stats.percent = roundPercent(e.pageNumber / viewerApp.pagesCount);
             $currentDocument.currentPage = e.pageNumber;
             updateProgress();
+        });
+
+        viewerApp.eventBus.on("updatepagehiglights", async (e: any) => {
+            setTimeout(async () => {
+                const data = await viewerApp.pdfDocument.saveDocument();
+                const file = new Blob([data], {
+                    type: "application/pdf",
+                });
+                getAllAnnotations(file, e.pageNumber ?? -1);
+            }, 10);
         });
 
         function getHighlighterButton() {
@@ -200,6 +300,15 @@
             });
     });
 
+    function goToPage(pageNumber: number) {
+        viewerApp.pdfLinkService.goToPage(pageNumber);
+    }
+
+    function goToHighlight(pageNumber: number, location: number[]) {
+        viewerApp.pdfLinkService.goToPage(pageNumber);
+        viewerApp.eventBus.dispatch("scrolltooffset", { details: location });
+    }
+
     var isDarkMode: boolean = false;
     function toggleTheme() {
         isDarkMode = !isDarkMode;
@@ -216,15 +325,46 @@
     }
 </script>
 
-<div class="flex flex-row bg-[#222] relative">
+<div class="flex flex-row bg-[#222] relative overflow-hidden max-h-[100vh]">
     <pdfjs-viewer-element class="min-h-[100vh] z-[10]" viewer-path="pdfjs">
     </pdfjs-viewer-element>
-    <div class="min-w-[30%] max-w-[30%] z-[0] px-4 py-2">
-        {#each $notes as note}
-            {#if note.note}
-                <div>{note.pageNumber} {note.note}</div>
-            {/if}
-        {/each}
+    <div class="min-w-[25%] max-w-[25%] font overflow-scroll">
+        <div class="p-2 px-4 sticky top-0 z-[100] bg-[#222] w-full h-8">
+            Notes
+        </div>
+        <div class="px-4 py-2 space-y-2 flex flex-col items-start">
+            {#each [...$notes] as [pageNumber, page]}
+                {#if page?.length > 0}
+                    <button
+                        on:click={() => goToPage(pageNumber)}
+                        class="opacity-25 text-xs"
+                    >
+                        Page {pageNumber}
+                    </button>
+                    {#each page as note}
+                        {#if note.note}
+                            <button
+                                on:click={() =>
+                                    goToHighlight(pageNumber, note.location)}
+                                class=" bg-black text-sm rounded-md border-none text-start flex flex-row items-start justify-center w-[100%] min-w-[100%]"
+                            >
+                                <div
+                                    class="flex items-stretch p-2 bg-black rounded-sm w-full max-w-md relative"
+                                >
+                                    <div
+                                        class={`${note.color} opacity-75 w-1 rounded-l-sm absolute left-0 top-0 flex-1 bottom-0`}
+                                    ></div>
+                                    <div class="ml-2 w-[100%] min-w-[100%]">
+                                        {note.note}
+                                    </div>
+                                </div>
+                            </button>
+                        {/if}
+                    {/each}
+                {/if}
+            {/each}
+            <div class="h-10"></div>
+        </div>
     </div>
     {#if loadingDone}
         <div class="absolute z-[1000]"><Stats bind:progressEl /></div>
@@ -251,3 +391,26 @@
         </div>
     {/if}
 </div>
+
+<style>
+    .font {
+        color: var(--f_high) !important;
+        font-family: var(--font-family);
+        font-size: var(--font-size);
+    }
+    .yellow {
+        @apply bg-[#FFFF98];
+    }
+    .green {
+        @apply bg-[#53FFBC];
+    }
+    .blue {
+        @apply bg-[#80EBFF];
+    }
+    .pink {
+        @apply bg-[#FFCBE6];
+    }
+    .red {
+        @apply bg-[#FF4F5F];
+    }
+</style>
