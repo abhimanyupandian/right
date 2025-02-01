@@ -6,7 +6,6 @@ const config: Config = {
 		extend: {},
 	},
 	plugins: [
-		require('tailwind-scrollbar'),
 	],
 }
 
