@@ -69,7 +69,8 @@ export function getNewNotepadMetdata(): Document {
         notes: [],
         author: "",
         totalPages: 0,
-        currentPage: 1
+        currentPage: 1,
+        scrollTop: 0
     }
 }
 
@@ -85,6 +86,7 @@ export function getNewPdfMetadata(file: File): Document {
         notes: [],
         author: "",
         totalPages: 0,
-        currentPage: 1
+        currentPage: 1,
+        scrollTop: 0
     }
 }

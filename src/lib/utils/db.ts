@@ -25,7 +25,8 @@ export interface Document {
     author: string,
     tags: string[],
     totalPages: number,
-    currentPage: number
+    currentPage: number,
+    scrollTop: number
 }
 
 const db = new Dexie('right-db') as Dexie & {
@@ -53,6 +54,16 @@ export class Saver {
     static getTagValue(line: string, type: TagType) {
         var delimeter = Tags[type];
         return (line.split(delimeter)[1] ?? "").trim();
+    }
+
+    static saveScrollPosition(scrollTop: number) {
+        var currentDocument_ = get(currentDocument);
+        db.document
+            .where("id")
+            .equals(currentDocument_.id)
+            .modify((_, ref) => {
+                ref.value.scrollTop = scrollTop;
+            });
     }
 
     private static doSave(pdfContent?: Blob) {
