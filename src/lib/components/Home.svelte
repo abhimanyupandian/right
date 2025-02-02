@@ -170,7 +170,7 @@
 								>
 									{each.name.length <= 50
 										? each.name
-										: `${each.name.slice(0, 60)}...`}
+										: `${each.name.slice(0, 25)}...`}
 								</a>
 								<span class="text-xs opacity-30">
 									{new Date(each.modifiedOn).toLocaleString()}

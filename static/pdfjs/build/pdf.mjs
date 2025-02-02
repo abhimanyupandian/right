@@ -2286,7 +2286,6 @@ class AnnotationEditorUIManager {
   }
   #onSelectEnd(methodOfCreation = "") {
     if (this.#mode === AnnotationEditorType.HIGHLIGHT) {
-      console.log(this.#mainHighlightColorPicker)
       this._eventBus.dispatch("selectedtext", {
         text: document.getSelection().toString(),
         color: "test"
@@ -2883,7 +2882,7 @@ class AnnotationEditorUIManager {
       isEmpty: this.#isEmpty()
     });
     this._editorUndoBar?.hide();
-    this._eventBus.dispatch("updatepagehiglights", { 
+    this._eventBus.dispatch("updatepagehighlights", { 
       pageNumber : -1
     });
   }
@@ -2894,7 +2893,7 @@ class AnnotationEditorUIManager {
       hasSomethingToRedo: this.#commandManager.hasSomethingToRedo(),
       isEmpty: this.#isEmpty()
     });
-    this._eventBus.dispatch("updatepagehiglights", { 
+    this._eventBus.dispatch("updatepagehighlights", { 
       pageNumber : -1
     });
   }
@@ -2921,7 +2920,7 @@ class AnnotationEditorUIManager {
     return false;
   }
   delete() {
-    this._eventBus.dispatch("updatepagehiglights", { 
+    this._eventBus.dispatch("updatepagehighlights", { 
       pageNumber : this.#currentPageIndex
     });
     this.commitOrRemove();
@@ -8528,7 +8527,7 @@ class CanvasGraphics {
       ctx.restore();
       ctx.fillStyle = pattern;
     }
-    ctx.fillStyle = "white"; // RIGHT2: TEXT COLOR CHANGE
+    ctx.fillStyle = "#b5b8c2"; // RIGHT2: TEXT COLOR CHANGE
     if (current.patternStroke) {
       ctx.save();
       const pattern = current.strokeColor.getPattern(ctx, this, getCurrentTransformInverse(ctx), PathType.STROKE);

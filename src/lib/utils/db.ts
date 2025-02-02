@@ -26,7 +26,8 @@ export interface Document {
     tags: string[],
     totalPages: number,
     currentPage: number,
-    scrollTop: number
+    scrollTop: number,
+    scaleFactor: number
 }
 
 const db = new Dexie('right-db') as Dexie & {
@@ -63,6 +64,16 @@ export class Saver {
             .equals(currentDocument_.id)
             .modify((_, ref) => {
                 ref.value.scrollTop = scrollTop;
+            });
+    }
+
+    static saveScaleFactor(scaleFactor: number) {
+        var currentDocument_ = get(currentDocument);
+        db.document
+            .where("id")
+            .equals(currentDocument_.id)
+            .modify((_, ref) => {
+                ref.value.scaleFactor = scaleFactor;
             });
     }
 
