@@ -10,9 +10,10 @@
     import * as mupdfjs from "mupdf/mupdfjs";
 
     var viewerApp: any;
-
     var loadingDone: boolean = false;
     var progressEl: any;
+    var hideNotes: boolean = false;
+
     export let pdfId: string | undefined = undefined;
 
     async function getDocument(file: Blob) {
@@ -24,7 +25,7 @@
         return document;
     }
 
-    function getCenter(rect: number[]) {
+    function getRectCenter(rect: number[]) {
         const [x, y, width, height] = rect;
         const centerX = x + width / 2;
         const centerY = y + height / 2;
@@ -37,14 +38,12 @@
     }
 
     function rgbToClass(r: number, g: number, b: number) {
-        console.log(r, g, b);
         const hex = (
             "#" +
             componentToHex(Math.trunc(r)) +
             componentToHex(Math.trunc(g)) +
             componentToHex(Math.trunc(b))
         ).toUpperCase();
-        console.log(hex);
         return hexToClass(hex);
     }
 
@@ -77,11 +76,10 @@
                     color[1]! * 255,
                     color[2]! * 255,
                 );
-                console.log(color, note);
                 _annotsCollected.push({
                     note,
                     pageNumber,
-                    location: getCenter(each.getBounds()),
+                    location: getRectCenter(each.getBounds()),
                     color,
                 });
             }
@@ -164,38 +162,49 @@
         Progress.init(progressEl);
         const viewer: any = document.querySelector("pdfjs-viewer-element")!;
         viewerApp = await viewer.initialize();
+        viewerApp.save = onSave;
+        viewerApp.download = onSave;
+        viewerApp.downloadOrSave = onSave;
+
+        var resetDone: boolean = false;
 
         shadowRoot = document.querySelector(
             "pdfjs-viewer-element",
         )?.shadowRoot!;
         iframe = shadowRoot.querySelector("iframe")!;
 
-        var resetScrollDone: boolean = false;
+        /** LOADING DOCUMENT */
+        db.document
+            .get(pdfId ?? $page.url.searchParams.get("pdf") ?? "")
+            .then((document) => {
+                if (document) {
+                    $currentDocument = document;
+                    loadPDF(document.content as Blob);
+                }
+            });
 
-        viewerApp.save = onSave;
-        viewerApp.download = onSave;
-        viewerApp.downloadOrSave = onSave;
-
-        viewerApp.eventBus.on("ready", (e: any) => {
-            if (!resetScrollDone) resetScroll();
-        });
+        function resetScale() {
+            viewerApp.pdfViewer.setScale($currentDocument.scaleFactor ?? 1, {
+                noScroll: false,
+            });
+        }
 
         function resetScroll() {
             const pdfContainer =
                 iframe.contentDocument.querySelector("#viewerContainer");
             pdfContainer.scrollTop = $currentDocument.scrollTop;
-            resetScrollDone = true;
+            resetDone = true;
 
             pdfContainer.addEventListener(
                 "scroll",
-                function (event: any) {
+                function () {
                     $currentDocument.scrollTop = pdfContainer.scrollTop;
                 },
                 false,
             );
             pdfContainer.addEventListener(
                 "scrollend",
-                function (event: any) {
+                function () {
                     Saver.saveScrollPosition($currentDocument.scrollTop);
                 },
                 false,
@@ -203,9 +212,33 @@
             setTimeout(() => (loadingDone = true), 100); // so that there is no flash
         }
 
+        function getHighlighterButton() {
+            return iframe.contentDocument?.querySelector(
+                "#editorHighlightButton",
+            );
+        }
+
+        function toggleHighlighter() {
+            return getHighlighterButton().click();
+        }
+
+        function shouldCloseHighlighter(e: any) {
+            const isToggled =
+                getHighlighterButton().classList.contains("toggled");
+            if (e.key === "Escape" && isToggled) {
+                toggleHighlighter();
+            }
+        }
+
+        viewerApp.eventBus.on("ready", (e: any) => {
+            if (!resetDone) {
+                resetScale();
+                resetScroll();
+            }
+        });
+
         viewerApp.eventBus.on("colorchange", (e: string) => {
             $color = e;
-            console.log($color);
         });
 
         viewerApp.eventBus.on(
@@ -229,64 +262,41 @@
                 });
             },
         );
-
-        /** LOADING DOCUMENT */
-        db.document
-            .get(pdfId ?? $page.url.searchParams.get("pdf") ?? "")
-            .then((document) => {
-                if (document) {
-                    $currentDocument = document;
-                    loadPDF(document.content as Blob);
-                }
-            });
-
         /** UPDATING SCROLL PROGRESS */
-        viewerApp.eventBus.on("pagechanging", (e: any) => {
+        viewerApp.eventBus.on("pagechanging", (e: { pageNumber: number }) => {
             $stats.percent = roundPercent(e.pageNumber / viewerApp.pagesCount);
             $currentDocument.currentPage = e.pageNumber;
             updateProgress();
         });
 
-        viewerApp.eventBus.on("updatepagehiglights", async (e: any) => {
-            setTimeout(async () => {
-                const data = await viewerApp.pdfDocument.saveDocument();
-                const file = new Blob([data], {
-                    type: "application/pdf",
-                });
-                getAllAnnotations(file, e.pageNumber ?? -1);
-            }, 10);
+        /** UPDATING ZOOM SCALE FACTOR */
+        viewerApp.eventBus.on("zoomchange", (e: { scale: number }) => {
+            $currentDocument.scaleFactor = e.scale;
+            Saver.saveScaleFactor($currentDocument.scaleFactor);
+            const pdfContainer =
+                iframe.contentDocument.querySelector("#viewerContainer");
+            Saver.saveScrollPosition(pdfContainer.scrollTop);
         });
 
-        function getHighlighterButton() {
-            return iframe.contentDocument?.querySelector(
-                "#editorHighlightButton",
-            );
-        }
-
-        function toggleHighlighter() {
-            return getHighlighterButton().click();
-        }
-
-        function shouldCloseHighlighter(event: any) {
-            const isToggled =
-                getHighlighterButton().classList.contains("toggled");
-            if (event.key === "Escape" && isToggled) {
-                toggleHighlighter();
-            }
-        }
-
-        /** FOR HIGHLIGHT SHORTCUT */
-        iframe.contentDocument.addEventListener(
-            "keydown",
-            function (event: any) {
-                if (
-                    (event.shiftKey && event.metaKey) ||
-                    shouldCloseHighlighter(event)
-                ) {
-                    toggleHighlighter();
-                }
+        viewerApp.eventBus.on(
+            "updatepagehighlights",
+            async (e: { pageNumber: number }) => {
+                setTimeout(async () => {
+                    const data = await viewerApp.pdfDocument.saveDocument();
+                    const file = new Blob([data], {
+                        type: "application/pdf",
+                    });
+                    getAllAnnotations(file, e.pageNumber ?? -1);
+                }, 10);
             },
         );
+
+        /** FOR HIGHLIGHT SHORTCUT */
+        iframe.contentDocument.addEventListener("keydown", function (e: any) {
+            if ((e.shiftKey && e.metaKey) || shouldCloseHighlighter(e)) {
+                toggleHighlighter();
+            }
+        });
 
         /** FOR SAVING */
         iframe.contentDocument
@@ -309,60 +319,72 @@
         viewerApp.eventBus.dispatch("scrolltooffset", { details: location });
     }
 
-    var isDarkMode: boolean = false;
-    function toggleTheme() {
-        isDarkMode = !isDarkMode;
-        const shadowRoot = document.querySelector(
-            "pdfjs-viewer-element",
-        )?.shadowRoot!;
-        const iframe: any = shadowRoot.querySelector("iframe")!;
-        const elInner = iframe.contentDocument.querySelector("div");
-        const viewer: HTMLElement = elInner?.querySelector("#viewerContainer");
-        viewer.classList.add("invert");
-        var style = document.createElement("style");
-        style.innerHTML = "#viewerContainer { invert: 100%; }";
-        shadowRoot.appendChild(style);
+    function toggleNotes() {
+        hideNotes = !hideNotes;
     }
 </script>
 
 <div class="flex flex-row bg-[#222] relative overflow-hidden max-h-[100vh]">
     <pdfjs-viewer-element class="min-h-[100vh] z-[10]" viewer-path="pdfjs">
     </pdfjs-viewer-element>
-    <div class="min-w-[25%] max-w-[25%] font overflow-scroll">
-        <div class="p-2 px-4 sticky top-0 z-[100] bg-[#222] w-full h-8">
-            Notes
-        </div>
-        <div class="px-4 py-2 space-y-2 flex flex-col items-start">
-            {#each [...$notes] as [pageNumber, page]}
-                {#if page?.length > 0}
-                    <button
-                        on:click={() => goToPage(pageNumber)}
-                        class="opacity-25 text-xs"
-                    >
-                        Page {pageNumber}
-                    </button>
-                    {#each page as note}
-                        {#if note.note}
-                            <button
-                                on:click={() =>
-                                    goToHighlight(pageNumber, note.location)}
-                                class=" bg-black text-sm rounded-md border-none text-start flex flex-row items-start justify-center w-[100%] min-w-[100%]"
-                            >
-                                <div
-                                    class="flex items-stretch p-2 bg-black rounded-sm w-full max-w-md relative"
+    <div
+        class:min-w-[25%]={!hideNotes}
+        class:max-w-[25%]={!hideNotes}
+        class:min-w-[10%]={hideNotes}
+        class:w-[10%]={hideNotes}
+        class="min-w-[25%] max-w-[25%] duration-100 font overflow-scroll items-start flex flex-col"
+    >
+        <button
+            on:click={toggleNotes}
+            class="px-4 py-1 sticky top-0 z-[100] bg-[#222] h-[33px] border-b-[1px] border-black flex flex-row items-start justify-center w-full"
+        >
+            <div class="flex-0">Notes</div>
+        </button>
+        <div
+            class:min-w-[100%]={!hideNotes}
+            class:w-[100%]={!hideNotes}
+            class:opacity-[25%]={hideNotes}
+            class="px-4 py-2 space-y-2 flex flex-col items-start"
+        >
+            {#if $notes.size}
+                {#each [...$notes] as [pageNumber, page]}
+                    {#if page?.length > 0}
+                        <button
+                            on:click={() => goToPage(pageNumber)}
+                            class="opacity-25 text-xs"
+                        >
+                            Page {pageNumber}
+                        </button>
+                        {#each page as note}
+                            {#if note.note}
+                                <button
+                                    class:min-w-[100%]={!hideNotes}
+                                    class:w-[100%]={!hideNotes}
+                                    on:click={() =>
+                                        goToHighlight(
+                                            pageNumber,
+                                            note.location,
+                                        )}
+                                    class=" bg-black text-sm rounded-md border-none text-start flex flex-row items-start justify-center w-full"
                                 >
                                     <div
-                                        class={`${note.color} opacity-75 w-1 rounded-l-sm absolute left-0 top-0 flex-1 bottom-0`}
-                                    ></div>
-                                    <div class="ml-2 w-[100%] min-w-[100%]">
-                                        {note.note}
+                                        class="flex items-stretch p-2 bg-black rounded-sm max-w-md relative"
+                                    >
+                                        <div
+                                            class={`${note.color} opacity-75 w-1 rounded-l-sm absolute left-0 top-0 flex-1 bottom-0`}
+                                        ></div>
+                                        <div class="ml-2 break-all">
+                                            {!hideNotes
+                                                ? note.note
+                                                : `${note.note.slice(0, 10)}...`}
+                                        </div>
                                     </div>
-                                </div>
-                            </button>
-                        {/if}
-                    {/each}
-                {/if}
-            {/each}
+                                </button>
+                            {/if}
+                        {/each}
+                    {/if}
+                {/each}
+            {:else}{/if}
             <div class="h-10"></div>
         </div>
     </div>

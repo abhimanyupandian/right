@@ -11714,6 +11714,9 @@ class PDFViewer {
     }
     return 1;
   }
+  setScale(value, options) {
+    this.#setScale(value, options)
+  }
   #setScale(value, options) {
     let scale = parseFloat(value);
     if (scale > 0) {
@@ -12362,6 +12365,7 @@ class PDFViewer {
       drawingDelay,
       origin
     });
+    this.eventBus.dispatch("zoomchange", { scale: newScale })
   }
   increaseScale(options = {}) {
     this.updateScale({
@@ -13607,13 +13611,12 @@ const PDFViewerApplication = {
     if (this.pdfViewer.isInPresentationMode) {
       return;
     }
-    // ZOOM DISABLED
-    // this.pdfViewer.updateScale({
-    //   drawingDelay: AppOptions.get("defaultZoomDelay"),
-    //   steps,
-    //   scaleFactor,
-    //   origin
-    // });
+    this.pdfViewer.updateScale({
+      drawingDelay: AppOptions.get("defaultZoomDelay"),
+      steps,
+      scaleFactor,
+      origin
+    });
   },
   zoomIn() {
     this.updateZoom(1);
