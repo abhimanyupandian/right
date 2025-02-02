@@ -51512,6 +51512,7 @@ class HighlightAnnotation extends MarkupAnnotation {
     highlight.set("QuadPoints", quadPoints);
     highlight.set("C", Array.from(color, c => c / 255));
     highlight.set("CA", opacity);
+    highlight.set("Contents", annotation.content);
     if (user) {
       highlight.set("T", stringToAsciiOrUTF16BE(user));
     }

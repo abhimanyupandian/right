@@ -13607,12 +13607,13 @@ const PDFViewerApplication = {
     if (this.pdfViewer.isInPresentationMode) {
       return;
     }
-    this.pdfViewer.updateScale({
-      drawingDelay: AppOptions.get("defaultZoomDelay"),
-      steps,
-      scaleFactor,
-      origin
-    });
+    // ZOOM DISABLED
+    // this.pdfViewer.updateScale({
+    //   drawingDelay: AppOptions.get("defaultZoomDelay"),
+    //   steps,
+    //   scaleFactor,
+    //   origin
+    // });
   },
   zoomIn() {
     this.updateZoom(1);
@@ -13990,6 +13991,7 @@ const PDFViewerApplication = {
         this.initialBookmark = initialBookmark;
         pdfViewer.currentScaleValue = pdfViewer.currentScaleValue;
         this.setInitialView(hash);
+        this.eventBus.dispatch("ready", {})
       }).catch(() => {
         this.setInitialView();
       }).then(function () {
@@ -14465,6 +14467,9 @@ const PDFViewerApplication = {
       source: window
     }), {
       signal
+    });
+    eventBus.on("scrolltooffset", (e) => {
+      mainContainer.scrollBy(0, e.details[1] - 100);
     });
     window.addEventListener("updatefromsandbox", evt => {
       eventBus.dispatch("updatefromsandbox", {

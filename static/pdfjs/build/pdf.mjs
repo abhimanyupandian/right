@@ -1837,6 +1837,7 @@ class ColorManager {
   }
 }
 class AnnotationEditorUIManager {
+  selectedText = null;
   #abortController = new AbortController();
   #activeEditor = null;
   #allEditors = new Map();
@@ -2210,11 +2211,16 @@ class AnnotationEditorUIManager {
   }
   addToAnnotationStorage(editor) {
     if (!editor.isEmpty() && this.#annotationStorage && !this.#annotationStorage.has(editor.id)) {
+      if (this.selectedText) {
+        editor.content = this.selectedText;
+        this.selectedText = null;
+      }
       this.#annotationStorage.setValue(editor.id, editor);
     }
   }
   #selectionChange() {
     const selection = document.getSelection();
+    this.selectedText = selection.toString();
     if (!selection || selection.isCollapsed) {
       if (this.#selectedTextNode) {
         this.#highlightToolbar?.hide();
@@ -2280,6 +2286,11 @@ class AnnotationEditorUIManager {
   }
   #onSelectEnd(methodOfCreation = "") {
     if (this.#mode === AnnotationEditorType.HIGHLIGHT) {
+      console.log(this.#mainHighlightColorPicker)
+      this._eventBus.dispatch("selectedtext", {
+        text: document.getSelection().toString(),
+        color: "test"
+      });
       this.highlightSelection(methodOfCreation);
     } else if (this.#enableHighlightFloatingButton) {
       this.#displayHighlightToolbar();
@@ -2872,6 +2883,9 @@ class AnnotationEditorUIManager {
       isEmpty: this.#isEmpty()
     });
     this._editorUndoBar?.hide();
+    this._eventBus.dispatch("updatepagehiglights", { 
+      pageNumber : -1
+    });
   }
   redo() {
     this.#commandManager.redo();
@@ -2879,6 +2893,9 @@ class AnnotationEditorUIManager {
       hasSomethingToUndo: true,
       hasSomethingToRedo: this.#commandManager.hasSomethingToRedo(),
       isEmpty: this.#isEmpty()
+    });
+    this._eventBus.dispatch("updatepagehiglights", { 
+      pageNumber : -1
     });
   }
   addCommands(params) {
@@ -2904,6 +2921,9 @@ class AnnotationEditorUIManager {
     return false;
   }
   delete() {
+    this._eventBus.dispatch("updatepagehiglights", { 
+      pageNumber : this.#currentPageIndex
+    });
     this.commitOrRemove();
     const drawingEditor = this.currentLayer?.endDrawingSession(true);
     if (!this.hasSelection && !drawingEditor) {
@@ -7690,6 +7710,7 @@ class CanvasGraphics {
     const height = this.ctx.canvas.height;
     const savedFillStyle = this.ctx.fillStyle;
     this.ctx.fillStyle = background || "#ffffff";
+    this.ctx.fillStyle = "#222" // RIGHT2: BG COLOR CHANGE
     this.ctx.fillRect(0, 0, width, height);
     this.ctx.fillStyle = savedFillStyle;
     if (transparency) {
@@ -8507,6 +8528,7 @@ class CanvasGraphics {
       ctx.restore();
       ctx.fillStyle = pattern;
     }
+    ctx.fillStyle = "white"; // RIGHT2: TEXT COLOR CHANGE
     if (current.patternStroke) {
       ctx.save();
       const pattern = current.strokeColor.getPattern(ctx, this, getCurrentTransformInverse(ctx), PathType.STROKE);
@@ -14079,10 +14101,10 @@ class AnnotationElement {
     const triggers = this.getElementsToTriggerPopup();
     if (Array.isArray(triggers)) {
       for (const element of triggers) {
-        element.classList.add(`highlightArea highlight-${this.editId}`);
+        element.classList.add(`highlightArea`, `highlight-${this.editId}`);
       }
     } else {
-      triggers.classList.add(`highlightArea highlight-${this.editId}`);
+      triggers.classList.add(`highlightArea`, `highlight-${this.editId}`);
     }
   }
   _editOnDoubleClick() {
@@ -15859,7 +15881,7 @@ class HighlightAnnotationElement extends AnnotationElement {
   }
   render() {
     if (!this.data.popupRef && this.hasPopupData) {
-      this._createPopup();
+      // this._createPopup();
     }
     this.container.classList.add("highlightAnnotation");
     this._editOnDoubleClick();
@@ -17533,6 +17555,7 @@ class ColorPicker {
   }
   #colorSelect(color, event) {
     event.stopPropagation();
+    this.#eventBus.dispatch("colorchange", color);
     this.#eventBus.dispatch("switchannotationeditorparams", {
       source: this,
       type: this.#type,
@@ -18459,6 +18482,7 @@ class HighlightEditor extends AnnotationEditor {
     const rect = this.getRect(0, 0);
     const color = AnnotationEditor._colorManager.convert(this.color);
     const serialized = {
+      content: this.content,
       annotationType: AnnotationEditorType.HIGHLIGHT,
       color,
       opacity: this.#opacity,

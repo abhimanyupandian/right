@@ -136,7 +136,7 @@
 					</div>
 					<label
 						for="openPdf"
-						class=" text-blue-500 rounded-sm cursor-pointer"
+						class=" text-blue-500 rounded-sm cursor-pointer flex-nowrap"
 					>
 						{`Open PDF`}
 					</label>
