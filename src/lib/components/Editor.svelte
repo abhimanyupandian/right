@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Saver } from "$lib/utils/db";
 	import { Progress } from "$lib/utils/progress";
-	import { currentNotepad } from "$lib/utils/stores";
+	import { currentDocument } from "$lib/utils/stores";
 	import { onMount } from "svelte";
 
 	export let editorEl: HTMLElement;
@@ -24,7 +24,7 @@
 			id="editor"
 			on:input={() => Saver.save({ delay: 2 * 1000 })}
 			bind:this={editorEl}
-			bind:value={$currentNotepad.content}
+			bind:value={$currentDocument.content}
 		></textarea>
 	</div>
 {/if}

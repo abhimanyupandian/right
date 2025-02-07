@@ -74,7 +74,7 @@
 
     function refreshList(query?: string) {
         doneSearching = false;
-        db.notepad
+        db.document
             .toArray()
             .then((notepads) => {
                 var filtered_ = [];
@@ -111,7 +111,7 @@
                 isConfirming = isConfirming;
             }, 2000);
         } else {
-            db.notepad.delete(id);
+            db.document.delete(id);
             recentsRefresher.broadcast.postMessage(true);
             recentsRefresher.set(id);
             refreshList();
