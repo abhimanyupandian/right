@@ -13994,10 +13994,10 @@ const PDFViewerApplication = {
         this.initialBookmark = initialBookmark;
         pdfViewer.currentScaleValue = pdfViewer.currentScaleValue;
         this.setInitialView(hash);
-        this.eventBus.dispatch("ready", {})
       }).catch(() => {
         this.setInitialView();
-      }).then(function () {
+      }).then(() => {
+        this.eventBus.dispatch("ready", {})
         pdfViewer.update();
       });
     });

@@ -368,7 +368,7 @@
                                     class=" bg-black text-sm rounded-md border-none text-start flex flex-row items-start justify-center w-full"
                                 >
                                     <div
-                                        class="flex items-stretch p-2 bg-black rounded-sm max-w-md relative"
+                                        class="flex w-full p-2 bg-black rounded-sm max-w-md relative"
                                     >
                                         <div
                                             class={`${note.color} opacity-75 w-1 rounded-l-sm absolute left-0 top-0 flex-1 bottom-0`}
