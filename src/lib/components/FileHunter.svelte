@@ -92,7 +92,9 @@
                                 .includes(query),
                     );
                 } else filtered_ = notepads.slice(0, 5);
-                filtered = filtered_.sort((a, b) => b.modifiedOn - a.modifiedOn);
+                filtered = filtered_.sort(
+                    (a, b) => b.modifiedOn - a.modifiedOn,
+                );
                 doneSearching = true;
                 if (commandEl) commandEl.focus();
             })
@@ -127,7 +129,7 @@
         class="fixed z-10 top-10 left-[calc(50vw-200px)] justify-center items-center hidden md:flex"
     >
         <div
-            class="bg-black p-2 rounded shadow-lg w-[400px] border-[0.1em] border-zinc-800 flex flex-col overflow-hidden"
+            class="bg-[#222] p-2 rounded shadow-lg w-[400px] border-[0.1em] border-zinc-800 flex flex-col overflow-hidden"
         >
             <input
                 type="text"

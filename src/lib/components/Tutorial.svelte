@@ -27,7 +27,7 @@
         class="cursor-default select-none fixed z-10 top-10 left-[calc(50vw-200px)] justify-center items-center hidden md:flex"
     >
         <div
-            class="bg-black p-4 rounded shadow-lg w-[400px] border-[0.1em] border-zinc-800 flex flex-col overflow-hidden space-y-2"
+            class="bg-[#222] p-4 rounded shadow-lg w-[400px] border-[0.1em] border-zinc-800 flex flex-col overflow-hidden space-y-2"
         >
             <div class="text-zinc-400">Shortcuts</div>
             <div class="flex flex-row items-center justify-between">

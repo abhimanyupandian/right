@@ -22,7 +22,7 @@
         class="fixed z-10 top-10 left-[calc(50vw-250px)] justify-center items-center hidden md:flex"
     >
         <div
-            class="bg-zinc-900 p-4 space-y-4 rounded shadow-lg w-[500px] border-[0.1em] border-zinc-800 flex flex-col overflow-hidden"
+            class="bg-[#222] p-4 space-y-4 rounded shadow-lg w-[500px] border-[0.1em] border-zinc-800 flex flex-col overflow-hidden"
         >
             <div class="flex flex-row items-center space-x-4">
                 <div>

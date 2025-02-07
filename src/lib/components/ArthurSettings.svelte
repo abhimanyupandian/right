@@ -61,7 +61,7 @@
     ></div>
     {#if showLoading}
         <div
-            class="z-20 w-full h-full bg-black opacity-50 fixed flex flex-col items-center justify-center"
+            class="z-20 w-full h-full bg-[#222] opacity-50 fixed flex flex-col items-center justify-center"
         >
             <div>Fetching Model Data...</div>
         </div>
@@ -70,7 +70,7 @@
         class="fixed z-10 top-10 left-[calc(50vw-250px)] justify-center items-center hidden md:flex"
     >
         <div
-            class="bg-black p-2 rounded shadow-lg w-[500px] border-[0.1em] border-zinc-800 flex flex-col overflow-hidden"
+            class="bg-[#222] p-2 rounded shadow-lg w-[500px] border-[0.1em] border-zinc-800 flex flex-col overflow-hidden"
         >
             {#if error}
                 <div
