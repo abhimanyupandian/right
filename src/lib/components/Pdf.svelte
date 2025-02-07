@@ -8,140 +8,17 @@
     import { Progress, roundPercent } from "$lib/utils/progress";
     import { writable } from "svelte/store";
     import * as mupdfjs from "mupdf/mupdfjs";
-
-    var viewerApp: any;
-    var loadingDone: boolean = false;
-    var progressEl: any;
-    var hideNotes: boolean = false;
+    import { redBright } from "colorette";
 
     export let pdfId: string | undefined = undefined;
 
-    async function getDocument(file: Blob) {
-        const data = await file.arrayBuffer();
-        const document = mupdfjs.PDFDocument.openDocument(
-            data,
-            "application/pdf",
-        ) as mupdfjs.PDFDocument;
-        return document;
-    }
-
-    function getRectCenter(rect: number[]) {
-        const [x, y, width, height] = rect;
-        const centerX = x + width / 2;
-        const centerY = y + height / 2;
-        return [centerX, centerY];
-    }
-
-    function componentToHex(c: number) {
-        var hex = c.toString(16);
-        return hex.length == 1 ? "00" + hex : hex;
-    }
-
-    function rgbToClass(r: number, g: number, b: number) {
-        const hex = (
-            "#" +
-            componentToHex(Math.trunc(r)) +
-            componentToHex(Math.trunc(g)) +
-            componentToHex(Math.trunc(b))
-        ).toUpperCase();
-        return hexToClass(hex);
-    }
-
-    function hexToClass(hex: string) {
-        if (hex === "#FFFF98" || hex === "#FFFF99") return "yellow";
-        if (hex === "#53FFBC" || hex === "#54FFBC") return "green";
-        if (hex === "#80EBFF" || hex === "#7FEAFF") return "blue";
-        if (hex === "#FFCBE6" || hex === "#FFCCE5") return "pink";
-        if (hex === "#FF4F5F" || hex === "#FF4F5E") return "red";
-        return "yellow";
-    }
-
-    async function getAndUpdateAnnotationsForPage(
-        document: mupdfjs.PDFDocument,
-        pageNumber: number,
-    ) {
-        const page = document.loadPage(pageNumber);
-        const annots = page.getAnnotations();
-
-        pageNumber += 1;
-
-        const _annotsCollected = [];
-        if (annots.length) {
-            for (var each of annots) {
-                const note = each.getContents().trim();
-                if (!note) continue;
-                var color: any | string = each.getColor();
-                color = rgbToClass(
-                    color[0] * 255,
-                    color[1]! * 255,
-                    color[2]! * 255,
-                );
-                _annotsCollected.push({
-                    note,
-                    pageNumber,
-                    location: getRectCenter(each.getBounds()),
-                    color,
-                });
-            }
-        }
-
-        $notes.set(pageNumber, _annotsCollected);
-        $notes = $notes;
-    }
-
-    async function getAllAnnotations(file: Blob, pageNumber?: number) {
-        const document = await getDocument(file);
-
-        if (!pageNumber) pageNumber = -1;
-
-        // Update only one page
-        if (pageNumber >= 0) {
-            getAndUpdateAnnotationsForPage(document, pageNumber);
-            return;
-        }
-
-        // Update all pages
-        var i = 0;
-        while (i < document.countPages()) {
-            getAndUpdateAnnotationsForPage(document, i);
-            i++;
-        }
-    }
-
-    async function loadPDF(file: Blob) {
-        const fileReader = new FileReader();
-        fileReader.onload = async (e: any) => {
-            const pdfData = new Uint8Array(e.target.result);
-            viewerApp.open({ data: pdfData });
-            $currentDocument.totalPages = viewerApp.pagesCount;
-        };
-        fileReader.readAsArrayBuffer(file);
-        await getAllAnnotations(file);
-    }
-
-    async function onSave() {
-        if (!viewerApp) return;
-        const data = await viewerApp.pdfDocument.saveDocument();
-        const file = new Blob([data], {
-            type: "application/pdf",
-        });
-        Saver.save({
-            content: file,
-        });
-    }
-
-    function updateProgress() {
-        try {
-            var details = Progress.get($stats.percent);
-            $stats.percent = details.percent;
-            progressEl.innerHTML = details.html;
-        } catch (e) {}
-    }
-
-    $: if (progressEl) {
-        updateProgress();
-    }
-
+    var pdfViewer: any;
+    var loadingDone: boolean = false;
+    var progressEl: any;
+    var hideNotes: boolean = false;
+    var shadowRoot: ShadowRoot;
+    var iframe: any;
+    const color = writable<string>("");
     const notes = writable<
         Map<
             number,
@@ -154,19 +31,156 @@
         >
     >(new Map());
 
-    var shadowRoot: ShadowRoot;
-    var iframe: any;
-    const color = writable<string>("");
+    $: if (progressEl) {
+        updateProgress();
+    }
+
+    async function getDocument(file: Blob) {
+        const data = await file.arrayBuffer();
+        return mupdfjs.PDFDocument.openDocument(data, "application/pdf");
+    }
+
+    function getRectCenter([x, y, width, height]: number[]) {
+        return [x + width / 2, y + height / 2];
+    }
+
+    function componentToHex(c: number) {
+        var hex = c.toString(16);
+        return hex.length == 1 ? "00" + hex : hex;
+    }
+
+    function rgbToClass(rgb: number[]) {
+        return hexToClass(
+            `#${rgb.map((e) => componentToHex(Math.trunc(e))).join("")}`.toUpperCase(),
+        );
+    }
+
+    function hexToClass(hex: string) {
+        const colorMap: Record<string, string> = {
+            "#FFFF98": "yellow",
+            "#FFFF99": "yellow",
+            "#53FFBC": "green",
+            "#54FFBC": "green",
+            "#80EBFF": "blue",
+            "#7FEAFF": "blue",
+            "#FFCBE6": "pink",
+            "#FFCCE5": "pink",
+            "#FF4F5F": "red",
+            "#FF4F5E": "red",
+        };
+        return colorMap[hex] || "yellow";
+    }
+
+    async function getAndUpdateAnnotationsForPage(
+        document: mupdfjs.PDFDocument,
+        pageNumber: number,
+    ) {
+        const page = document.loadPage(pageNumber);
+        const annotations = page.getAnnotations();
+
+        if (!annotations.length) return;
+
+        const collectedAnnotations = annotations
+            .map((annotation) => {
+                const note = annotation.getContents().trim();
+                if (!note) return null;
+                return {
+                    note,
+                    pageNumber: pageNumber + 1,
+                    location: getRectCenter(annotation.getBounds()),
+                    color: rgbToClass(
+                        annotation.getColor().map((c: number) => c * 255),
+                    ),
+                };
+            })
+            .filter(Boolean) as {
+            note: string;
+            pageNumber: number;
+            location: number[];
+            color: string;
+        }[];
+
+        if (collectedAnnotations.length) {
+            notes.update((notes) => {
+                notes.set(pageNumber + 1, collectedAnnotations);
+                return notes;
+            });
+        }
+    }
+
+    async function getAllAnnotations(file: Blob, pageNumber?: number) {
+        const document = await getDocument(file);
+
+        if (pageNumber && pageNumber >= 0) {
+            await getAndUpdateAnnotationsForPage(document, pageNumber);
+            return;
+        }
+
+        // Process all pages concurrently
+        await Promise.all(
+            Array.from({ length: document.countPages() }, (_, i) =>
+                getAndUpdateAnnotationsForPage(document, i),
+            ),
+        );
+    }
+
+    async function loadPDF(file: Blob) {
+        const fileReader = new FileReader();
+        fileReader.onload = async (event) => {
+            try {
+                pdfViewer.open({
+                    data: new Uint8Array(event.target!.result as ArrayBuffer),
+                });
+                $currentDocument.totalPages = pdfViewer.pagesCount;
+                await getAllAnnotations(file);
+            } catch (error) {
+                console.error("Error loading PDF:", error);
+            }
+        };
+
+        fileReader.readAsArrayBuffer(file);
+    }
+
+    async function onSave() {
+        if (!pdfViewer?.pdfDocument) {
+            console.warn("No PDF document loaded.");
+            return;
+        }
+        try {
+            Saver.save({
+                content: new Blob(
+                    [await pdfViewer.pdfDocument.saveDocument()],
+                    { type: "application/pdf" },
+                ),
+            });
+        } catch (error) {
+            console.error("Error saving PDF:", error);
+        }
+    }
+
+    function updateProgress() {
+        try {
+            const details = Progress.get($stats.percent);
+            if (details) {
+                $stats.percent = details.percent;
+                progressEl.innerHTML = details.html;
+            }
+        } catch (error) {
+            // console.error("Error updating progress:", error);
+        }
+    }
 
     onMount(async () => {
-        Progress.init(progressEl);
-        const viewer: any = document.querySelector("pdfjs-viewer-element")!;
-        viewerApp = await viewer.initialize();
-        viewerApp.save = onSave;
-        viewerApp.download = onSave;
-        viewerApp.downloadOrSave = onSave;
-
         var resetDone: boolean = false;
+
+        Progress.init(progressEl);
+        const viewerEl: any = document.querySelector("pdfjs-viewer-element")!;
+
+        pdfViewer = await viewerEl.initialize();
+
+        pdfViewer.save = onSave;
+        pdfViewer.download = onSave;
+        pdfViewer.downloadOrSave = onSave;
 
         shadowRoot = document.querySelector(
             "pdfjs-viewer-element",
@@ -184,32 +198,30 @@
             });
 
         function resetScale() {
-            viewerApp.pdfViewer.setScale($currentDocument.scaleFactor ?? 1, {
+            pdfViewer.pdfViewer.setScale($currentDocument.scaleFactor ?? 1, {
                 noScroll: false,
             });
         }
-
         function resetScroll() {
             const pdfContainer =
                 iframe.contentDocument.querySelector("#viewerContainer");
+            if (!pdfContainer) return;
+
             pdfContainer.scrollTop = $currentDocument.scrollTop;
             resetDone = true;
 
-            pdfContainer.addEventListener(
-                "scroll",
-                function () {
-                    $currentDocument.scrollTop = pdfContainer.scrollTop;
-                },
-                false,
-            );
-            pdfContainer.addEventListener(
-                "scrollend",
-                function () {
-                    Saver.saveScrollPosition($currentDocument.scrollTop);
-                },
-                false,
-            );
-            setTimeout(() => (loadingDone = true), 100); // so that there is no flash
+            const updateScrollPosition = () => {
+                $currentDocument.scrollTop = pdfContainer.scrollTop;
+            };
+
+            pdfContainer.addEventListener("scroll", updateScrollPosition, {
+                passive: true,
+            });
+            pdfContainer.addEventListener("scrollend", () => {
+                Saver.saveScrollPosition($currentDocument.scrollTop);
+            });
+
+            setTimeout(() => (loadingDone = true), 100); // Prevent flashing effect
         }
 
         function getHighlighterButton() {
@@ -230,47 +242,50 @@
             }
         }
 
-        viewerApp.eventBus.on("ready", (e: any) => {
+        pdfViewer.eventBus.on("ready", (e: any) => {
             if (!resetDone) {
                 resetScale();
                 resetScroll();
             }
         });
 
-        viewerApp.eventBus.on("colorchange", (e: string) => {
+        pdfViewer.eventBus.on("colorchange", (e: string) => {
             $color = e;
         });
 
-        viewerApp.eventBus.on(
+        pdfViewer.eventBus.on(
             "selectedtext",
-            (details: { text: string; color: string }) => {
-                if (!details.text) return;
+            ({ text }: { text: string; color: string }) => {
+                if (!text?.trim()) return;
+
                 notes.update((e) => {
-                    if (!e.get($currentDocument.currentPage)) {
-                        e.set($currentDocument.currentPage, []);
-                    }
-                    e.set($currentDocument.currentPage, [
-                        ...(e.get($currentDocument.currentPage) ?? []),
+                    const page = $currentDocument.currentPage;
+                    const existingNotes = e.get(page) ?? [];
+
+                    e.set(page, [
+                        ...existingNotes,
                         {
-                            note: details.text.trim(),
-                            pageNumber: $currentDocument.currentPage,
+                            note: text.trim(),
+                            pageNumber: page,
                             location: [],
                             color: hexToClass($color.toUpperCase()),
                         },
                     ]);
+
                     return e;
                 });
             },
         );
+
         /** UPDATING SCROLL PROGRESS */
-        viewerApp.eventBus.on("pagechanging", (e: { pageNumber: number }) => {
-            $stats.percent = roundPercent(e.pageNumber / viewerApp.pagesCount);
+        pdfViewer.eventBus.on("pagechanging", (e: { pageNumber: number }) => {
+            $stats.percent = roundPercent(e.pageNumber / pdfViewer.pagesCount);
             $currentDocument.currentPage = e.pageNumber;
             updateProgress();
         });
 
         /** UPDATING ZOOM SCALE FACTOR */
-        viewerApp.eventBus.on("zoomchange", (e: { scale: number }) => {
+        pdfViewer.eventBus.on("zoomchange", (e: { scale: number }) => {
             $currentDocument.scaleFactor = e.scale;
             Saver.saveScaleFactor($currentDocument.scaleFactor);
             const pdfContainer =
@@ -278,15 +293,13 @@
             Saver.saveScrollPosition(pdfContainer.scrollTop);
         });
 
-        viewerApp.eventBus.on(
+        pdfViewer.eventBus.on(
             "updatepagehighlights",
-            async (e: { pageNumber: number }) => {
+            async ({ pageNumber = -1 }) => {
                 setTimeout(async () => {
-                    const data = await viewerApp.pdfDocument.saveDocument();
-                    const file = new Blob([data], {
-                        type: "application/pdf",
-                    });
-                    getAllAnnotations(file, e.pageNumber ?? -1);
+                    const data = await pdfViewer.pdfDocument.saveDocument();
+                    const file = new Blob([data], { type: "application/pdf" });
+                    await getAllAnnotations(file, pageNumber);
                 }, 10);
             },
         );
@@ -302,7 +315,7 @@
         iframe.contentDocument
             ?.querySelector("#downloadButton")
             .addEventListener("click", function () {
-                viewerApp.downloadManager.download(
+                pdfViewer.downloadManager.download(
                     $currentDocument.content,
                     "",
                     $currentDocument.name,
@@ -311,12 +324,12 @@
     });
 
     function goToPage(pageNumber: number) {
-        viewerApp.pdfLinkService.goToPage(pageNumber);
+        pdfViewer.pdfLinkService.goToPage(pageNumber);
     }
 
     function goToHighlight(pageNumber: number, location: number[]) {
-        viewerApp.pdfLinkService.goToPage(pageNumber);
-        viewerApp.eventBus.dispatch("scrolltooffset", { details: location });
+        pdfViewer.pdfLinkService.goToPage(pageNumber);
+        pdfViewer.eventBus.dispatch("scrolltooffset", { details: location });
     }
 
     function toggleNotes() {
@@ -336,9 +349,9 @@
     >
         <button
             on:click={toggleNotes}
-            class="px-4 py-1 sticky top-0 z-[100] bg-[#222] h-[33px] border-b-[1px] border-black flex flex-row items-start justify-center w-full"
+            class="px-4 sticky top-0 z-[100] bg-[#222] h-[33px] border-b-[1px] border-black flex flex-row items-center justify-center w-full"
         >
-            <div class="flex-0">Notes</div>
+            <div class="flex-0 text-sm">Notes</div>
         </button>
         <div
             class:min-w-[100%]={!hideNotes}
