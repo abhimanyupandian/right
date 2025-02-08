@@ -7,7 +7,6 @@
         currentDocument,
         index,
         selection,
-        selectionTracker,
         stats,
     } from "$lib/utils/stores";
     import Stats from "$lib/components/Stats/PageStats.svelte";
@@ -43,12 +42,9 @@
 
     function restoreSelection(target: any) {
         if (!target) return;
-        target.setSelectionRange(
-            $selectionTracker.range.start,
-            $selectionTracker.range.end,
-        );
+        target.setSelectionRange($selection.range.start, $selection.range.end);
         target.scrollTo({
-            top: $selectionTracker.scrollTop,
+            top: $selection.scrollTop,
             behavior: "instant",
         });
         target.focus();
@@ -61,7 +57,9 @@
 
     function saveSelection(target: any) {
         if (!target) return;
-        $selectionTracker = {
+        $selection = {
+            before: "",
+            after: "",
             range: {
                 start: target.selectionStart,
                 end: target.selectionEnd,

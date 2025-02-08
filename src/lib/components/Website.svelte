@@ -1,3 +1,8 @@
+<script>
+
+    import TypewriterEffect from "./TypewriterEffect.svelte";
+
+</script>
 <!-- <svelte:head>
     <title>Right - Focused Writing</title>
     <meta
@@ -28,7 +33,7 @@ It runs directly in your browser, completely free and serverless, with all data 
                 <div class="text-white">
                     <div class="text-3xl font-bold">Right.</div>
                     <div class="text-xl font-bold opacity-25">
-                        Focused Writing.
+                        Focused <TypewriterEffect></TypewriterEffect>.
                     </div>
                 </div>
             </a>

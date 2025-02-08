@@ -107,7 +107,7 @@
                                 class=" hover:bg-white w-full outline-none hover:text-black rounded p-3 flex flex-row justify-between items-center"
                             >
                                 <span>{each}</span>
-                                <div class="text-sm">
+                                <div class="">
                                     {#if $modelDownloadProgress[each] === undefined}
                                         <div class="stroke-green-500">
                                             <Download></Download>

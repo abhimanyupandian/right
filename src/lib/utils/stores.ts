@@ -13,7 +13,6 @@ function createSessionState(label: string) {
 }
 
 export const recentsRefresher = createSessionState('recentsRefresher');
-
 export const currentDocument = writable<Document>();
 export const index = writable<IndexEntry[]>([]);
 export const stats = writable<Stats>({
@@ -27,13 +26,14 @@ export const stats = writable<Stats>({
     totalL: 0,
     selectedL: 0
 });
-export const selection = writable<{ before: string; content: string; after: string }>({
-    before: "",
-    after: "",
-    content: "",
-});
-export const selectionTracker = writable<{ range: { start: number; end: number }, content: string, scrollTop: number, clientHeight: number, }>(
+export const selection = writable<{
+    before: string; after: string,
+    range: { start: number; end: number },
+    content: string, scrollTop: number, clientHeight: number,
+}>(
     {
+        before: "",
+        after: "",
         range: { start: 0, end: 0 },
         content: "",
         scrollTop: 0,

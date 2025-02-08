@@ -5,12 +5,10 @@
 	import { onMount } from "svelte";
 	import { get } from "svelte/store";
 	import en from "javascript-time-ago/locale/en";
-	import { arthur } from "$lib/utils/arthur";
-	import ArthurSettings from "../ArthurSettings.svelte";
+	import ArthurStatus from "./ArthurStatus.svelte";
 
 	export let progressEl: any;
 
-	let showArthurStatus: boolean = false;
 	let showArthurSettings: boolean = false;
 
 	TimeAgo.addLocale(en);
@@ -36,7 +34,6 @@
 	});
 </script>
 
-<ArthurSettings bind:show={showArthurSettings}></ArthurSettings>
 <div
 	class="stats shadow-sm shadow-gray-400 h-[32px] px-3 flex flex-row w-[100vw] fixed bottom-0 select-none justify-between items-center min-w-[100vw]"
 >
@@ -72,38 +69,9 @@
 			>Modified {timeAgo.format(new Date(lastSaveTime))}
 		</span>
 	</div>
-	<div class="text-xs flex flex-row justify-between items-start space-x-3">
-		<span class="stats-text">{time}</span>
-		{#if showArthurStatus}
-			<tooltip
-				class="fixed right-1 bottom-[32px] bg-black text-white h-4 text-md p-1 flex flex-col items-center justify-center"
-			>
-				<div>
-					Arthur AI {$arthur.state === "loading"
-						? "Loading..."
-						: $arthur.state == true
-							? "Ready!"
-							: "Unavailable"}
-				</div>
-			</tooltip>
-		{/if}
-		<button
-			on:mouseenter={() => (showArthurStatus = true)}
-			on:mouseleave={() => (showArthurStatus = false)}
-			on:click={() => (showArthurSettings = true)}
-			class="opacity-50 hover:opacity-100 outline-none"
-		>
-			{#if $arthur.state === "loading"}
-				<div class="w-3 h-3 rounded-full bg-[orange]"></div>
-			{:else}
-				<div
-					class:bg-green-500={$arthur.state == true}
-					class:bg-yellow-500={$arthur.state == "unsupported"}
-					class:bg-red-500={!$arthur.state}
-					class="w-3 h-3 rounded-full"
-				></div>
-			{/if}
-		</button>
+	<div class="flex flex-row justify-between items-start space-x-3">
+		<span class="stats-text text-xs">{time}</span>
+		<ArthurStatus></ArthurStatus>
 	</div>
 </div>
 

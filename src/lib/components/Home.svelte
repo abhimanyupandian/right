@@ -15,6 +15,7 @@
 	import Tutorial from "./Tutorial.svelte";
 	import Heart from "$lib/icons/Heart.svelte";
 	import About from "./About.svelte";
+    import TypewriterEffect from "./TypewriterEffect.svelte";
 
 	var savedDocuments: Document[] = [];
 	var showFileHunter: boolean = false;
@@ -108,7 +109,7 @@
 				<div>
 					<div class="text-3xl font-bold">Right.</div>
 					<div class="text-xl font-bold opacity-25">
-						Focused Writing.
+						Focused <TypewriterEffect></TypewriterEffect>.
 					</div>
 				</div>
 			</div>

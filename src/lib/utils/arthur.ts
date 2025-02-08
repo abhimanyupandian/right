@@ -4,7 +4,8 @@ import { get, writable } from "svelte/store";
 export let arthur = writable<{
     state: boolean | 'loading' | 'unsupported',
     engine?: MLCEngine, model?: string
-}>({ state: false });
+    focused?: boolean
+}>({ state: false, focused: false });
 export let arthurInitProgress = writable<string>("");
 
 export const currentModel = writable<string>(localStorage.currentModel ?? "")

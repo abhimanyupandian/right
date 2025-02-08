@@ -1,6 +1,5 @@
 <script lang="ts">
-    import { selection, selectionTracker } from "$lib/utils/stores";
-    import { onMount } from "svelte";
+    import { selection } from "$lib/utils/stores";
 
     var contextHtml = "";
     let contentEl: HTMLElement;
@@ -18,7 +17,7 @@
     }
 
     $: if (contentEl) {
-        contentEl.scrollTo({ top: $selectionTracker.scrollTop });
+        contentEl.scrollTo({ top: $selection.scrollTop });
         contentEl.onscroll = (e: any) => {
             // Remove this to disable scrolling context into view
             // $selectionTracker.scrollTop = e.target.scrollTop;

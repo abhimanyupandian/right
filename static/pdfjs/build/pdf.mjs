@@ -32,11 +32,11 @@
 /******/ 			if (__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
 /******/ 				Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
         /******/
-}
+      }
       /******/
-}
+    }
     /******/
-};
+  };
   /******/
 })();
 /******/
@@ -2221,6 +2221,9 @@ class AnnotationEditorUIManager {
   #selectionChange() {
     const selection = document.getSelection();
     this.selectedText = selection.toString();
+    if (this.selectedText.trim().length === 0) {
+      this._eventBus.dispatch("selectionend", {});
+    }
     if (!selection || selection.isCollapsed) {
       if (this.#selectedTextNode) {
         this.#highlightToolbar?.hide();
@@ -2285,11 +2288,10 @@ class AnnotationEditorUIManager {
     }
   }
   #onSelectEnd(methodOfCreation = "") {
+    let text = document.getSelection().toString();
+    this._eventBus.dispatch("selectedtext", { text });
     if (this.#mode === AnnotationEditorType.HIGHLIGHT) {
-      this._eventBus.dispatch("selectedtext", {
-        text: document.getSelection().toString(),
-        color: "test"
-      });
+      this._eventBus.dispatch("highlightedtext", { text });
       this.highlightSelection(methodOfCreation);
     } else if (this.#enableHighlightFloatingButton) {
       this.#displayHighlightToolbar();
@@ -2882,8 +2884,8 @@ class AnnotationEditorUIManager {
       isEmpty: this.#isEmpty()
     });
     this._editorUndoBar?.hide();
-    this._eventBus.dispatch("updatepagehighlights", { 
-      pageNumber : -1
+    this._eventBus.dispatch("updatepagehighlights", {
+      pageNumber: -1
     });
   }
   redo() {
@@ -2893,8 +2895,8 @@ class AnnotationEditorUIManager {
       hasSomethingToRedo: this.#commandManager.hasSomethingToRedo(),
       isEmpty: this.#isEmpty()
     });
-    this._eventBus.dispatch("updatepagehighlights", { 
-      pageNumber : -1
+    this._eventBus.dispatch("updatepagehighlights", {
+      pageNumber: -1
     });
   }
   addCommands(params) {
@@ -2920,8 +2922,8 @@ class AnnotationEditorUIManager {
     return false;
   }
   delete() {
-    this._eventBus.dispatch("updatepagehighlights", { 
-      pageNumber : this.#currentPageIndex
+    this._eventBus.dispatch("updatepagehighlights", {
+      pageNumber: this.#currentPageIndex
     });
     this.commitOrRemove();
     const drawingEditor = this.currentLayer?.endDrawingSession(true);

@@ -1,20 +1,27 @@
 <script lang="ts">
     import { arthur, Arthur } from "$lib/utils/arthur";
     import { Symbols } from "$lib/utils/constants";
-    import { selectionTracker } from "$lib/utils/stores";
+    import { selection } from "$lib/utils/stores";
     import { clickOutside } from "$lib/utils/ui";
     import { writable } from "svelte/store";
 
     const IS_DESKTOP = !!(globalThis as any).IS_DESKTOP;
 
-    var isLoading: boolean = false;
-    var isStreaming: boolean = false;
-    var promptEl: HTMLElement;
-    var messagesEl: HTMLElement;
-    export let prompt: string = "";
-
-    let enabled: boolean = $arthur.state === true;
     export let isChatting: boolean;
+
+    let error: string = "";
+    let prompt: string = "";
+    let isLoading: boolean = false;
+    let isStreaming: boolean = false;
+    let promptEl: HTMLElement;
+    let messagesEl: HTMLElement;
+    let filteredCommands: Command[] = [];
+    let enabled: boolean = $arthur.state === true;
+    type Command = {
+        label: string;
+        alias?: string[];
+        handler: (command: string[]) => Promise<{ prompt: string }>;
+    };
 
     const messages = writable<
         {
@@ -26,12 +33,12 @@
 
     type Response = { status: boolean; content?: string; id?: string };
 
-    async function handleFreeText() {
+    async function handleFreeText(selectedText: string) {
         startLoading();
         startStreaming();
         const messageId = new Date().getMilliseconds().toString();
         try {
-            Arthur.chat($selectionTracker.content, prompt).then((chunks) => {
+            Arthur.chat(selectedText, prompt).then((chunks) => {
                 if (chunks) {
                     const messageDiv = document.getElementById(
                         `AI:${messageId}`,
@@ -92,20 +99,29 @@
     }
 
     async function handleKeyPress(e: any) {
+        error = "";
+
         if (!prompt.startsWith("/")) return;
-        var keyCode = e.code || e.key;
-        var resp: Response = { status: false };
+        if (!$selection.content) {
+            $selection.content = ""; // GET FULL PAGE CONTENT
+            error = "Please select some text in the PDF.";
+            return;
+        }
+
+        let keyCode = e.code || e.key;
+        let resp: Response = { status: false };
         if (keyCode == "Enter" && prompt) {
             scrollToBottom();
             if (prompt.startsWith("/")) {
-                resp = await handleCommand();
+                resp = await handleCommand($selection.content);
             } else {
-                resp = await handleFreeText();
+                resp = await handleFreeText($selection.content);
             }
+            // $selection.content = "";
             if (resp.status) {
                 $messages.push({
                     source: "context",
-                    message: $selectionTracker.content,
+                    message: $selection.content,
                     timestamp: resp.id!,
                 });
                 $messages.push({
@@ -125,25 +141,23 @@
         }
     }
 
-    var chatFocused = true;
-
     function isValidCommand() {
-        var args = prompt.split(Symbols.SPACE);
-        var words: number = -1;
-        var sentences: number = -1;
-        for (var each of args.slice(1)) {
+        let args = prompt.split(Symbols.SPACE);
+        let words: number = -1;
+        let sentences: number = -1;
+        for (let each of args.slice(1)) {
             if (each.endsWith("w")) {
                 words = parseInt(each.match(/\d/g)?.join("") ?? "-1");
             } else if (each.endsWith("s")) {
                 sentences = parseInt(each.match(/\d/g)?.join("") ?? "-1");
             }
         }
-        var commandDef = $commands.filter((e) => `/${e.label}` === args[0])[0];
+        let commandDef = $commands.filter((e) => `/${e.label}` === args[0])[0];
         return { args, commandDef, words, sentences };
     }
 
-    async function handleCommand() {
-        var { args, commandDef, words, sentences } = isValidCommand();
+    async function handleCommand(selectedText: string) {
+        let { args, commandDef, words, sentences } = isValidCommand();
         if (commandDef) {
             const { prompt } = await commandDef.handler(args);
 
@@ -152,7 +166,8 @@
 
             const messageId = new Date().getMilliseconds().toString();
             try {
-                Arthur.chat($selectionTracker.content, prompt, {
+                console.log(`Works ${words}`);
+                Arthur.chat(selectedText, prompt, {
                     words: words > 0 ? words : undefined,
                     sentences: sentences > 0 ? sentences : undefined,
                 }).then((chunks) => {
@@ -192,21 +207,21 @@
 
     $: if (isChatting) {
         enabled = true;
-        chatFocused = true;
+        $arthur.focused = true;
         document.addEventListener("keydown", function (event: any) {
             if (event.metaKey && event.key === "/") {
                 event.preventDefault();
-                chatFocused = true;
+                $arthur.focused = true;
             } else if (event.key === "Escape" && !isLoading && !isStreaming) {
                 isChatting = false;
             }
         });
     } else {
         enabled = false;
-        chatFocused = false;
+        $arthur.focused = false;
     }
 
-    $: if (chatFocused && promptEl) {
+    $: if ($arthur.focused && promptEl) {
         promptEl.focus();
         scrollToBottom();
     }
@@ -259,12 +274,6 @@
             },
         },
     ]);
-    type Command = {
-        label: string;
-        alias?: string[];
-        handler: (command: string[]) => Promise<{ prompt: string }>;
-    };
-    var filteredCommands: Command[] = [];
     $: if (prompt) {
         filteredCommands = $commands.filter((e) =>
             `/${e.label}`.startsWith(prompt.split(Symbols.SPACE)[0] ?? ""),
@@ -274,15 +283,15 @@
 
 {#if enabled}
     <div
-        class:opacity-100={chatFocused}
+        class:opacity-100={$arthur.focused}
         class:pb-10={IS_DESKTOP}
         class="duration-100 flex-1 flex-col max-h-[calc(100vh)] max-w-[calc(100vw-976px)] min-w-[calc(100vw-976px)] justify-between px-4 lg:block md:hidden pb-2"
     >
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y_no_static_element_interactions -->
         <div
-            on:click={() => (chatFocused = true)}
-            use:clickOutside={() => (chatFocused = false)}
+            on:click={() => ($arthur.focused = true)}
+            use:clickOutside={() => ($arthur.focused = false)}
             class="w-full h-full flex flex-col space-y-2"
         >
             <div
@@ -336,7 +345,13 @@
             {#if prompt && !isLoading && !isStreaming}
                 <div class="w-full">
                     <div class="flex flex-col justify-center items-start">
-                        {#if filteredCommands.length}
+                        {#if filteredCommands.length === 0 || error}
+                            <div class="text-red-500 text-xs self-center">
+                                {error ||
+                                    `Invalid action. Please start your command with
+                                '/' followed by a valid action.`}
+                            </div>
+                        {:else}
                             <div
                                 class="flex flex-row space-x-2 items-center overflow-hidden"
                             >
@@ -354,11 +369,6 @@
                                         {/each}
                                     </div>
                                 </div>
-                            </div>
-                        {:else}
-                            <div class="text-red-500 text-xs self-center">
-                                Invalid action. Please start your command with
-                                '/' followed by a valid action.
                             </div>
                         {/if}
                     </div>
