@@ -27,6 +27,7 @@ export interface Document {
     totalPages: number,
     currentPage: number,
     scrollTop: number,
+    scrollLeft: number,
     scaleFactor: number
 }
 
@@ -57,13 +58,14 @@ export class Saver {
         return (line.split(delimeter)[1] ?? "").trim();
     }
 
-    static saveScrollPosition(scrollTop: number) {
+    static saveScrollPosition(scrollTop: number, scrollLeft: number) {
         var currentDocument_ = get(currentDocument);
         db.document
             .where("id")
             .equals(currentDocument_.id)
             .modify((_, ref) => {
                 ref.value.scrollTop = scrollTop;
+                ref.value.scrollLeft = scrollLeft;
             });
     }
 

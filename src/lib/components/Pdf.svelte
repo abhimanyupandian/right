@@ -220,17 +220,22 @@
             if (!pdfContainer) return;
 
             pdfContainer.scrollTop = $currentDocument.scrollTop;
+            pdfContainer.scrollLeft = $currentDocument.scrollLeft;
             resetDone = true;
 
             const updateScrollPosition = () => {
                 $currentDocument.scrollTop = pdfContainer.scrollTop;
+                $currentDocument.scrollLeft = pdfContainer.scrollLeft;
             };
 
             pdfContainer.addEventListener("scroll", updateScrollPosition, {
                 passive: true,
             });
             pdfContainer.addEventListener("scrollend", () => {
-                Saver.saveScrollPosition($currentDocument.scrollTop);
+                Saver.saveScrollPosition(
+                    $currentDocument.scrollTop,
+                    $currentDocument.scrollLeft,
+                );
             });
 
             setTimeout(() => (loadingDone = true), 100); // Prevent flashing effect
@@ -311,7 +316,10 @@
             Saver.saveScaleFactor($currentDocument.scaleFactor);
             const pdfContainer =
                 iframe.contentDocument.querySelector("#viewerContainer");
-            Saver.saveScrollPosition(pdfContainer.scrollTop);
+            Saver.saveScrollPosition(
+                pdfContainer.scrollTop,
+                pdfContainer.scrollLeft,
+            );
         });
 
         pdfViewer.eventBus.on(
