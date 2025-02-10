@@ -292,7 +292,7 @@
         <div
             on:click={() => ($arthur.focused = true)}
             use:clickOutside={() => ($arthur.focused = false)}
-            class="w-full h-full flex flex-col space-y-2"
+            class="w-full h-full flex flex-col space-y-2 font"
         >
             <div
                 class="w-full h-full rounded-md bg-[#212121] border-zinc-800 border-[0.1em] p-2 py-4 overflow-hidden"
@@ -393,6 +393,10 @@
 {/if}
 
 <style>
+    .font {
+        color: var(--f_high) !important;
+        font-family: var(--font-family);
+    }
     input {
         background: var(--background) !important;
         font-size: 15px;

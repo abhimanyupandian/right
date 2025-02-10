@@ -52,7 +52,7 @@
 			>Modified {timeAgo.format(new Date(lastSaveTime))}
 		</span>
 	</div>
-	<div class="flex flex-row justify-between items-start space-x-3">
+	<div class="flex flex-row justify-between items-center space-x-3">
 		<span class="stats-text text-xs">{time}</span>
 		<ArthurStatus></ArthurStatus>
 	</div>

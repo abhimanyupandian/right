@@ -14,14 +14,13 @@
     import Editor from "$lib/components/Editor.svelte";
     import { db } from "$lib/utils/db";
     import { page } from "$app/stores";
-    import Fullscreen from "$lib/icons/Fullscreen.svelte";
-    import FullscreenExit from "$lib/icons/FullscreenExit.svelte";
     import FileHunter from "$lib/components/FileHunter.svelte";
     import { get } from "svelte/store";
     import ContextViewer from "$lib/components/ContextViewer.svelte";
     import { arthur } from "$lib/utils/arthur";
     import Arthur from "$lib/components/Arthur.svelte";
     import NotFound from "./NotFound.svelte";
+    import Fullscreen from "./Fullscreen.svelte";
 
     export let notepadId: string | undefined = undefined;
 
@@ -157,21 +156,8 @@
                 loadingDone = true;
             });
     }
-    var pageEl: HTMLElement;
-    var isFullscreen: boolean = false;
-
-    function fullscreenchanged(_: any) {
-        isFullscreen = !!document.fullscreenElement;
-    }
-
-    document.addEventListener("fullscreenchange", fullscreenchanged);
-    function toggleFullscreen() {
-        if (pageEl.requestFullscreen && !isFullscreen) {
-            pageEl.requestFullscreen();
-        } else {
-            document.exitFullscreen();
-        }
-    }
+    
+    let pageEl: HTMLElement;
 </script>
 
 {#if !$currentDocument}
@@ -194,15 +180,7 @@
                 <div
                     class="flex flex-row space-x-2 items-center justify-center"
                 >
-                    <span class="fill-zinc-500 opacity-30 hover:opacity-100">
-                        <button on:click={toggleFullscreen}>
-                            {#if isFullscreen}
-                                <FullscreenExit></FullscreenExit>
-                            {:else}
-                                <Fullscreen></Fullscreen>
-                            {/if}
-                        </button>
-                    </span>
+                    <Fullscreen {pageEl}></Fullscreen>
                 </div>
             </div>
         </status>

@@ -11,6 +11,7 @@
     import Arthur from "./Arthur.svelte";
     import Loading from "./Loading.svelte";
     import { arthur } from "$lib/utils/arthur";
+    import Fullscreen from "./Fullscreen.svelte";
 
     export let pdfId: string | undefined = undefined;
 
@@ -20,6 +21,7 @@
     let hideNotes: boolean = false;
     let shadowRoot: ShadowRoot;
     let iframe: any;
+    let pageEl: HTMLElement;
 
     const color = writable<string>("");
     const notes = writable<
@@ -374,7 +376,10 @@
     }
 </script>
 
-<div class="flex flex-row bg-[#222] relative overflow-hidden max-h-[100vh]">
+<div
+    bind:this={pageEl}
+    class="flex flex-row bg-[#222] relative overflow-hidden max-h-[100vh]"
+>
     <pdfjs-viewer-element class="min-h-[100vh] z-[10]" viewer-path="pdfjs">
     </pdfjs-viewer-element>
     {#if !isChatting}
@@ -385,12 +390,15 @@
             class:w-[10%]={hideNotes}
             class="duration-100 font overflow-scroll items-start flex flex-col"
         >
-            <button
-                on:click={toggleNotes}
-                class="px-4 sticky top-0 z-[100] bg-[#222] h-[33px] border-b-[1px] border-black flex flex-row items-center justify-center w-full"
+            <div
+                class="px-4 sticky top-0 z-[100] bg-[#222] h-[33px] border-b-[1px] border-black flex flex-row items-center justify-between w-full"
             >
-                <div class="flex-0 text-sm">Notes</div>
-            </button>
+                <div></div>
+                <button on:click={toggleNotes} class="flex-0 text-sm"
+                    >Notes</button
+                >
+                <Fullscreen {pageEl}></Fullscreen>
+            </div>
             <div
                 class:min-w-[100%]={!hideNotes}
                 class:w-[100%]={!hideNotes}
