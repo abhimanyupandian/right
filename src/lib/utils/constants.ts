@@ -70,7 +70,9 @@ export function getNewNotepadMetdata(): Document {
         author: "",
         totalPages: 0,
         currentPage: 1,
-        scrollTop: 0
+        scrollTop: 0,
+        scrollLeft: 0,
+        scaleFactor: 1
     }
 }
 
@@ -87,6 +89,8 @@ export function getNewPdfMetadata(file: File): Document {
         author: "",
         totalPages: 0,
         currentPage: 1,
-        scrollTop: 0
+        scrollTop: 0,
+        scrollLeft: 0,
+        scaleFactor: 1
     }
 }

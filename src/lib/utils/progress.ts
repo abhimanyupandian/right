@@ -20,14 +20,14 @@ export class Progress {
         if (target.scrollTop != undefined) { // is notepad
             let scrollDistance = target.scrollTop;
             let scrollMax = target.scrollHeight - target.offsetHeight;
-            let ratio = Math.min(
+            var ratio = Math.min(
                 1,
                 scrollMax === 0 ? 0 : scrollDistance / scrollMax,
             );
-            let percent_ = roundPercent(scrollMax === 0 ? 0 : scrollDistance / scrollMax);
+            var percent_ = roundPercent(scrollMax === 0 ? 0 : scrollDistance / scrollMax);
         } else {
-            let percent_ = target as string;
-            let ratio = Math.min(
+            var percent_ = target as string;
+            var ratio = Math.min(
                 1,
                 parseFloat(percent_) / 100,
             );
