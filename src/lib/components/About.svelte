@@ -2,8 +2,8 @@
     import { onMount } from "svelte";
     import TypewriterEffect from "./TypewriterEffect.svelte";
 
-    export var show: boolean = false;
-    var overlayEl: HTMLElement;
+    export let show: boolean = false;
+    let overlayEl: HTMLElement;
 
     onMount(() => {
         window.addEventListener("click", function (e) {
@@ -65,8 +65,8 @@
                 > on the backend.
             </div>
             <div>
-                3. Currently AI capabilities are only supported in machines
-                which have atleast 16 GB RAM and browsers which support WebGPU.
+                3. Currently AI capabilities are only supported in machines on
+                browsers that support WebGPU. Please check
             </div>
         </div>
     </div>

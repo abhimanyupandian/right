@@ -61,7 +61,7 @@ app.on('ready', () => {
 	});
 });
 
-var mainWindow: BrowserWindow;
+let mainWindow: BrowserWindow;
 
 function createWindow() {
 	// Create the browser window.

@@ -15,16 +15,19 @@
 	import Tutorial from "./Tutorial.svelte";
 	import Heart from "$lib/icons/Heart.svelte";
 	import About from "./About.svelte";
-    import TypewriterEffect from "./TypewriterEffect.svelte";
+	import TypewriterEffect from "./TypewriterEffect.svelte";
 
-	var savedDocuments: Document[] = [];
-	var showFileHunter: boolean = false;
-	var showArthurSettings: boolean = false;
-	var showTutorial: boolean = false;
-	var showAbout: boolean = false;
+	let savedDocuments: Document[] = [];
+	let showFileHunter: boolean = false;
+	let showArthurSettings: boolean = false;
+	let showTutorial: boolean = false;
+	let showAbout: boolean = false;
+	let loadingDone: boolean = false;
+	let isConfirming: Record<string, any> = {};
+	let hoveringOver: string = "";
 
 	function onNewNotepad() {
-		var metadata = getNewNotepadMetdata();
+		let metadata = getNewNotepadMetdata();
 		db.document.add(metadata);
 		refreshRecents();
 		window.open(`/?id=${metadata.id}`, "_blank");
@@ -33,7 +36,7 @@
 	function onOpenPdf(e: any) {
 		const file = e.target.files[0];
 		if (!file) return;
-		var metadata = getNewPdfMetadata(file);
+		let metadata = getNewPdfMetadata(file);
 		db.document.add(metadata);
 		refreshRecents();
 		setTimeout(() => {
@@ -42,7 +45,7 @@
 	}
 
 	async function getSavedDocuments() {
-		var documents = (await db.document.toArray())
+		let documents = (await db.document.toArray())
 			.sort((a, b) => b.modifiedOn - a.modifiedOn)
 			.splice(0, 5);
 		loadingDone = true;
@@ -57,18 +60,7 @@
 		showFileHunter = true;
 	}
 
-	var loadingDone: boolean = false;
-	onMount(() => {
-		recentsRefresher.broadcast.onmessage = refreshRecents;
-		recentsRefresher.subscribe(refreshRecents);
-
-		document.body.style.removeProperty("background-color");
-	});
-
-	let isConfirming: Record<string, any> = {};
-	let hoveringOver: string = "";
-
-	const handleDelete = (id: string) => {
+	function handleDelete(id: string) {
 		if (!isConfirming[id]) {
 			isConfirming[id] = true;
 			setTimeout(() => {
@@ -79,7 +71,13 @@
 			db.document.delete(id);
 			refreshRecents();
 		}
-	};
+	}
+
+	onMount(() => {
+		recentsRefresher.broadcast.onmessage = refreshRecents;
+		recentsRefresher.subscribe(refreshRecents);
+		document.body.style.removeProperty("background-color");
+	});
 </script>
 
 <ArthurSettings bind:show={showArthurSettings}></ArthurSettings>

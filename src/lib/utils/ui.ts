@@ -13,7 +13,7 @@ export function getCaretCoordinates(textArea: any) {
     });
 
     // Create a mirror of the text inside the text area
-    var caret =
+    let caret =
         textArea.selectionDirection == "forward"
             ? textArea.selectionEnd
             : textArea.selectionStart;
@@ -53,7 +53,7 @@ function scrollTo(target: any, to: number) {
     div.innerText = textVal.slice(0, to);
     document.body.appendChild(div);
     div.style.width = `${target.clientWidth}px`;
-    var offsetHeight = div.clientHeight;
+    let offsetHeight = div.clientHeight;
     div.remove();
     smoothScroll(target, offsetHeight, 200);
 }
@@ -82,15 +82,15 @@ function smoothScroll(target: any, to: number, duration: number) {
 }
 
 export function scrollToLine(line: number) {
-    var editor = document.getElementById("editor") as any;
+    let editor = document.getElementById("editor") as any;
     const lineArr = editor.value.split(Symbols.EOL, line + 1);
     const arrJoin = lineArr.join(Symbols.EOL);
     const from = arrJoin.length - lineArr[line].length;
     const to = arrJoin.length;
     scrollTo(editor, to);
 
-    var selection = get(index)[line]
-    var cursorPosition = selection.index ?? -1;
+    let selection = get(index)[line]
+    let cursorPosition = selection.index ?? -1;
 
     editor.setSelectionRange(selection.range.start, selection.range.end);
     editor.focus();

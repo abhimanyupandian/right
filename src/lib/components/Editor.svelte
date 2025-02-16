@@ -2,19 +2,25 @@
 	import { Saver } from "$lib/utils/db";
 	import { Progress } from "$lib/utils/progress";
 	import { currentDocument } from "$lib/utils/stores";
-	import { onMount } from "svelte";
+	import { onDestroy, onMount } from "svelte";
 
 	export let editorEl: HTMLElement;
 	export let isChatting: boolean = false;
 
+	function handleKeydown(event: any) {
+		if ((event.ctrlKey || event.metaKey) && event.key === "s") {
+			event.preventDefault();
+			Saver.save();
+		}
+	}
+
 	onMount(() => {
 		Progress.track();
-		document.addEventListener("keydown", function (event) {
-			if ((event.ctrlKey || event.metaKey) && event.key === "s") {
-				event.preventDefault();
-				Saver.save();
-			}
-		});
+		document.addEventListener("keydown", handleKeydown);
+	});
+
+	onDestroy(() => {
+		document.removeEventListener("keydown", handleKeydown);
 	});
 </script>
 

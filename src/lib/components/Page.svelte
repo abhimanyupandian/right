@@ -25,13 +25,13 @@
     export let notepadId: string | undefined = undefined;
 
     const pos: { x: number; y: number } = { x: 0, y: 0 };
-    var cursorPosition: number = -1;
-
-    var editorEl: any;
-    var progressEl: any;
-
-    var isChatting = false;
-    var setupDone: boolean = false;
+    let cursorPosition: number = -1;
+    let editorEl: any;
+    let progressEl: any;
+    let isChatting = false;
+    let setupDone: boolean = false;
+    let loadingDone: boolean = false;
+    let pageEl: HTMLElement;
 
     function openChat() {
         if ($selection.content.trim().length <= 1) return;
@@ -47,11 +47,6 @@
             behavior: "instant",
         });
         target.focus();
-    }
-
-    function closeChat() {
-        if (!isChatting) return;
-        isChatting = false;
     }
 
     function saveSelection(target: any) {
@@ -70,19 +65,19 @@
     }
 
     function syncIndexWithCursor(target: any) {
-        var textUntilCursor = target.value.substring(
+        let textUntilCursor = target.value.substring(
             0,
             target.selectionDirection == "forward"
                 ? target.selectionEnd
                 : target.selectionStart,
         );
-        var lineNumber = textUntilCursor.split(Symbols.EOL).length;
+        let lineNumber = textUntilCursor.split(Symbols.EOL).length;
         cursorPosition = $index[lineNumber - 1].index ?? -1;
     }
 
     function updateProgress(target: any) {
         if (!target) return;
-        var details = Progress.get(target);
+        let details = Progress.get(target);
         $stats.percent = details.percent;
         progressEl.innerHTML = details.html;
     }
@@ -107,9 +102,9 @@
         });
 
         target.addEventListener("selectionchange", (event: any) => {
-            var target = event.target as any;
+            let target = event.target as any;
             syncIndexWithCursor(target);
-            var value = target.value;
+            let value = target.value;
             $selection.content = value.substring(
                 target.selectionStart,
                 target.selectionEnd,
@@ -124,17 +119,11 @@
                 .filter((e) => e.trim().length).length;
             $stats.selectedC = $selection.content.length;
 
-            var caret = getCaretCoordinates(target);
+            let caret = getCaretCoordinates(target);
             pos.x = target.offsetLeft + target.offsetWidth;
             pos.y = caret.top;
         });
     }
-
-    var loadingDone: boolean = false;
-    onMount(() => {
-        loadingDone = false;
-        onOpenNotepad();
-    });
 
     $: if (editorEl && !setupDone) {
         Progress.init(progressEl);
@@ -156,8 +145,11 @@
                 loadingDone = true;
             });
     }
-    
-    let pageEl: HTMLElement;
+
+    onMount(() => {
+        loadingDone = false;
+        onOpenNotepad();
+    });
 </script>
 
 {#if !$currentDocument}

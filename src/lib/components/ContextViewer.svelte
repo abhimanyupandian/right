@@ -1,7 +1,7 @@
 <script lang="ts">
     import { selection } from "$lib/utils/stores";
 
-    var contextHtml = "";
+    let contextHtml = "";
     let contentEl: HTMLElement;
 
     export let isChatting: boolean;
@@ -22,11 +22,6 @@
             // Remove this to disable scrolling context into view
             // $selectionTracker.scrollTop = e.target.scrollTop;
         };
-        // document.getElementById("context-selected")!.scrollIntoView({
-        //     behavior: "smooth",
-        //     block: "center",
-        //     inline: "center",
-        // });
     }
 </script>
 

@@ -33,42 +33,38 @@
 
     type Response = { status: boolean; content?: string; id?: string };
 
-    async function handleFreeText(selectedText: string) {
+    function chat(selectedText: string) {
+        const messageId = new Date().getMilliseconds().toString();
+        Arthur.chat(selectedText, prompt).then((chunks) => {
+            if (chunks) {
+                const messageDiv = document.getElementById(`AI:${messageId}`)!;
+                setTimeout(async () => {
+                    messageDiv.textContent = "";
+                    for await (const chunk of chunks) {
+                        messageDiv.textContent +=
+                            chunk.choices[0]?.delta.content || "";
+                        if (messagesEl) {
+                            scrollToBottom();
+                        }
+                        if (chunk.usage) {
+                            reset();
+                        }
+                    }
+                    $messages[$messages.length - 1].message =
+                        messageDiv.textContent;
+                }, 100); // Message DOM must be rendered.
+            }
+        });
+        return {
+            status: true,
+            id: messageId,
+        };
+    }
+
+    function handleFreeText(selectedText: string) {
         startLoading();
         startStreaming();
-        const messageId = new Date().getMilliseconds().toString();
-        try {
-            Arthur.chat(selectedText, prompt).then((chunks) => {
-                if (chunks) {
-                    const messageDiv = document.getElementById(
-                        `AI:${messageId}`,
-                    )!;
-                    setTimeout(async () => {
-                        messageDiv.textContent = "";
-                        for await (const chunk of chunks) {
-                            messageDiv.textContent +=
-                                chunk.choices[0]?.delta.content || "";
-                            if (messagesEl) {
-                                scrollToBottom();
-                            }
-                            if (chunk.usage) {
-                                reset();
-                            }
-                        }
-                        $messages[$messages.length - 1].message =
-                            messageDiv.textContent;
-                    }, 100); // Message DOM must be rendered.
-                }
-            });
-            return {
-                status: true,
-                id: messageId,
-            };
-        } catch (e) {
-            return {
-                status: false,
-            };
-        }
+        return chat(selectedText);
     }
 
     function reset() {
@@ -362,7 +358,7 @@
                                     <div class="flex flex-row space-x-2">
                                         {#each filteredCommands as each}
                                             <div
-                                                class="bg-zinc-900 text-white px-3 py-1 rounded-md text-sm"
+                                                class="bg-zinc-900 text-white px-3 py-1 rounded-md"
                                             >
                                                 {`/${each.label}`}
                                             </div>
@@ -382,7 +378,7 @@
                 bind:value={prompt}
                 disabled={isLoading || isStreaming || !enabled}
                 class:opacity-25={isLoading || isStreaming}
-                class="border-[0.1em] border-zinc-800 text-white text-md rounded-md block w-full p-2.5 outline-none focus:outline-none placeholder:text-zinc-500"
+                class="border-[0.1em] border-zinc-800 text-white rounded-md block w-full p-2.5 outline-none focus:outline-none placeholder:text-zinc-500"
                 placeholder={enabled
                     ? "Type / for commands"
                     : "Arthur AI not setup."}
@@ -396,10 +392,10 @@
     .font {
         color: var(--f_high) !important;
         font-family: var(--font-family);
+        font-size: 14px;
     }
     input {
         background: var(--background) !important;
-        font-size: 15px;
     }
     input::selection {
         background: white !important;
@@ -409,8 +405,7 @@
         background: var(--background) !important;
     }
     .bubble {
-        /* font-family: var(--font-family); */
-        font-size: 15px;
+        font-size: 14px;
     }
     .bubble::selection {
         background: black !important;

@@ -7,9 +7,9 @@
         AVAILABLE_MODELS,
         modelDownloadProgress,
     } from "$lib/utils/arthur";
-    import { onMount } from "svelte";
+    import { onDestroy, onMount } from "svelte";
 
-    export var show: boolean = false;
+    export let show: boolean = false;
 
     let showLoading: boolean = false;
     let overlayEl: HTMLElement;
@@ -44,13 +44,20 @@
         }
     }
 
+    function handleClick(event: any) {
+        if (show && overlayEl == event.target) {
+            show = false;
+        }
+    }
+
     onMount(() => {
         window.addEventListener("keydown", handleKeydown);
-        window.addEventListener("click", function (e) {
-            if (show && overlayEl == e.target) {
-                show = false;
-            }
-        });
+        window.addEventListener("click", handleClick);
+    });
+
+    onDestroy(() => {
+        document.removeEventListener("keydown", handleKeydown);
+        document.removeEventListener("click", handleClick);
     });
 </script>
 

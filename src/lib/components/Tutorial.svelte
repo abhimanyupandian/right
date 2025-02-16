@@ -1,20 +1,27 @@
 <script lang="ts">
-    import { onMount } from "svelte";
+    import { onDestroy, onMount } from "svelte";
 
-    var overlayEl: HTMLElement;
-    export var show: boolean = false;
+    let overlayEl: HTMLElement;
+    export let show: boolean = false;
 
     function handleKeydown(event: any) {
         if (event.key == "Escape") show = false;
     }
 
+    function handleClick(event: any) {
+        if (show && overlayEl == event.target) {
+            show = false;
+        }
+    }
+
     onMount(() => {
         window.addEventListener("keydown", handleKeydown);
-        window.addEventListener("click", function (e) {
-            if (show && overlayEl == e.target) {
-                show = false;
-            }
-        });
+        window.addEventListener("click", handleClick);
+    });
+
+    onDestroy(() => {
+        window.removeEventListener("keydown", handleKeydown);
+        window.removeEventListener("click", handleClick);
     });
 </script>
 

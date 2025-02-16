@@ -3,18 +3,17 @@
     import { page } from "$app/stores";
     import { db, type Notepad } from "$lib/utils/db";
     import { recentsRefresher } from "$lib/utils/stores";
-    import { onMount } from "svelte";
+    import { onDestroy, onMount } from "svelte";
 
-    var commandEl: HTMLElement;
-    var overlayEl: HTMLElement;
-
-    var query: string = "";
+    let commandEl: HTMLElement;
+    let overlayEl: HTMLElement;
+    let query: string = "";
     let filtered: Notepad[] = [];
-    var selectedNotepadIndex: number = -1;
+    let selectedNotepadIndex: number = -1;
+    let doneSearching: boolean = true;
+    let isConfirming: Record<string, any> = {};
 
-    var doneSearching: boolean = true;
-
-    export var show: boolean = false;
+    export let show: boolean = false;
 
     $: if (commandEl) {
         query = "";
@@ -59,14 +58,11 @@
         }
     }
 
-    onMount(() => {
-        window.addEventListener("keydown", handleKeydown);
-        window.addEventListener("click", function (e) {
-            if (show && overlayEl == e.target) {
-                show = false;
-            }
-        });
-    });
+    function handleClick(event: any) {
+        if (show && overlayEl == event.target) {
+            show = false;
+        }
+    }
 
     function disableQueryHandlingIfRequired(e: any) {
         if (!doneSearching) e.preventDefault();
@@ -77,7 +73,7 @@
         db.document
             .toArray()
             .then((notepads) => {
-                var filtered_ = [];
+                let filtered_ = [];
                 if (query) {
                     filtered_ = notepads.filter(
                         (c) =>
@@ -101,8 +97,7 @@
             .catch((_) => (doneSearching = true));
     }
 
-    let isConfirming: Record<string, any> = {};
-    const handleDelete = (e: any, id: string) => {
+    function handleDelete(e: any, id: string) {
         e.preventDefault();
         if (!isConfirming[id]) {
             isConfirming[id] = true;
@@ -117,7 +112,17 @@
             refreshList();
             if ($page.url.searchParams.get("id") == id) goto("/"); // If its the current notepad, close it.
         }
-    };
+    }
+
+    onMount(() => {
+        window.addEventListener("keydown", handleKeydown);
+        window.addEventListener("click", handleClick);
+    });
+
+    onDestroy(() => {
+        window.removeEventListener("keydown", handleKeydown);
+        window.removeEventListener("click", handleClick);
+    });
 </script>
 
 {#if show}

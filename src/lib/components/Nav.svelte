@@ -1,15 +1,18 @@
 <script lang="ts">
-	import { Indicator } from '$lib/utils/constants';
-	import { index } from '$lib/utils/stores';
-	import { scrollToLine } from '$lib/utils/ui';
+	import { Indicator } from "$lib/utils/constants";
+	import { index } from "$lib/utils/stores";
+	import { scrollToLine } from "$lib/utils/ui";
 
 	export let cursorPosition: number;
 </script>
 
-<div id="nav" class="max-w-[320px] min-w-[320px] flex-0 px-4 max-h-[calc(100vh-72px)] pb-24">
+<nav
+	id="nav"
+	class="max-w-[320px] min-w-[320px] flex-0 px-4 max-h-[calc(100vh-72px)] pb-24"
+>
 	{#each Object.values($index) as each}
 		<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-		{#if each.type != 'content'}
+		{#if each.type != "content"}
 			<!-- svelte-ignore a11y-click-events-have-key-events -->
 			<ul
 				class={`${each.type} w-fit cursor-pointer`}
@@ -22,7 +25,7 @@
 			</ul>
 		{/if}
 	{/each}
-</div>
+</nav>
 
 <style>
 	#nav {

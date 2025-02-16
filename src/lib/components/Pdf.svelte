@@ -22,6 +22,7 @@
     let shadowRoot: ShadowRoot;
     let iframe: any;
     let pageEl: HTMLElement;
+    let isChatting: boolean = false;
 
     const color = writable<string>("");
     const notes = writable<
@@ -182,6 +183,23 @@
                 openChat();
             }
         }
+    }
+
+    function goToPage(pageNumber: number) {
+        pdfViewer.pdfLinkService.goToPage(pageNumber);
+    }
+
+    function goToHighlight(pageNumber: number, location: number[]) {
+        pdfViewer.pdfLinkService.goToPage(pageNumber);
+        pdfViewer.eventBus.dispatch("scrolltooffset", { details: location });
+    }
+
+    function toggleNotes() {
+        hideNotes = !hideNotes;
+    }
+    function openChat() {
+        if (!$selection.content) return;
+        isChatting = true;
     }
 
     onMount(async () => {
@@ -356,24 +374,6 @@
                 );
             });
     });
-
-    function goToPage(pageNumber: number) {
-        pdfViewer.pdfLinkService.goToPage(pageNumber);
-    }
-
-    function goToHighlight(pageNumber: number, location: number[]) {
-        pdfViewer.pdfLinkService.goToPage(pageNumber);
-        pdfViewer.eventBus.dispatch("scrolltooffset", { details: location });
-    }
-
-    function toggleNotes() {
-        hideNotes = !hideNotes;
-    }
-    let isChatting: boolean = false;
-    function openChat() {
-        if (!$selection.content) return;
-        isChatting = true;
-    }
 </script>
 
 <div

@@ -1,8 +1,7 @@
 <script>
-
     import TypewriterEffect from "./TypewriterEffect.svelte";
-
 </script>
+
 <!-- <svelte:head>
     <title>Right - Focused Writing</title>
     <meta
@@ -37,9 +36,6 @@ It runs directly in your browser, completely free and serverless, with all data 
                     </div>
                 </div>
             </a>
-            <!-- <div class="flex flex-row space-x-4 text-white">
-                <a href="/" target="_blank"> Go to App </a>
-            </div> -->
         </div>
         <div class="text-[24px] text-white lg:w-[600px] pt-[25vh] w-full">
             Right is a

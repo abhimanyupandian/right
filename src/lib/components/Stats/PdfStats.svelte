@@ -1,34 +1,21 @@
 <script lang="ts">
 	import { Symbols } from "$lib/utils/constants";
 	import { currentDocument, stats } from "$lib/utils/stores";
-	import TimeAgo from "javascript-time-ago";
 	import { onMount } from "svelte";
 	import { get } from "svelte/store";
-	import en from "javascript-time-ago/locale/en";
 	import ArthurStatus from "./ArthurStatus.svelte";
+	import { getCurrentTime, getTimeAgo, startTicker } from "$lib/utils/time";
 
 	export let progressEl: any;
 
-	TimeAgo.addLocale(en);
-	const timeAgo = new TimeAgo("en-US");
-	var time: string = getCurrentTime();
-	var lastSaveTime: number = get(currentDocument).modifiedOn;
-
-	function getCurrentTime() {
-		const now = new Date();
-		const hours = now.getHours().toString().padStart(2, "0"); // Get hours and pad with 0 if needed
-		const minutes = now.getMinutes().toString().padStart(2, "0"); // Get minutes and pad with 0 if needed
-		return `${hours}:${minutes}`;
-	}
+	let time: string = getCurrentTime();
+	let lastSaveTime: number = -1;
 
 	onMount(() => {
-		var clock = setInterval(() => {
-			time = getCurrentTime();
+		startTicker((timeStr: string) => {
+			time = timeStr;
 			lastSaveTime = get(currentDocument).modifiedOn;
-		}, 1000);
-		return () => {
-			clearInterval(clock);
-		};
+		});
 	});
 </script>
 
@@ -49,7 +36,7 @@
 		>
 		<span class="stats-text">{Symbols.DOT}</span>
 		<span class="stats-text"
-			>Modified {timeAgo.format(new Date(lastSaveTime))}
+			>Modified {getTimeAgo(lastSaveTime)}
 		</span>
 	</div>
 	<div class="flex flex-row justify-between items-center space-x-3">

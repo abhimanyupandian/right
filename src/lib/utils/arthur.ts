@@ -26,8 +26,8 @@ export class Arthur {
     }) {
         if (!get(arthur).engine) return;
 
-        var limitsPrompt = '';
-        var limits: string[] = [];
+        let limitsPrompt = '';
+        let limits: string[] = [];
         if (options?.words) {
             limits.push(`${options?.words} words`)
         }
@@ -74,8 +74,8 @@ This is the text the user has selected: ${context}
 
                 // Store the requests in the allCachedItems array
                 for (const request of cachedRequests) {
-                    var url = new URL(request.url)
-                    var modelName = url.pathname.split("/")[2];
+                    let url = new URL(request.url)
+                    let modelName = url.pathname.split("/")[2];
                     allCachedItems.push(modelName);
                 }
             }

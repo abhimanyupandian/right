@@ -54,12 +54,12 @@ export class Saver {
     }
 
     static getTagValue(line: string, type: TagType) {
-        var delimeter = Tags[type];
+        let delimeter = Tags[type];
         return (line.split(delimeter)[1] ?? "").trim();
     }
 
     static saveScrollPosition(scrollTop: number, scrollLeft: number) {
-        var currentDocument_ = get(currentDocument);
+        let currentDocument_ = get(currentDocument);
         db.document
             .where("id")
             .equals(currentDocument_.id)
@@ -70,7 +70,7 @@ export class Saver {
     }
 
     static saveScaleFactor(scaleFactor: number) {
-        var currentDocument_ = get(currentDocument);
+        let currentDocument_ = get(currentDocument);
         db.document
             .where("id")
             .equals(currentDocument_.id)
@@ -80,11 +80,11 @@ export class Saver {
     }
 
     private static doSave(pdfContent?: Blob) {
-        var currentDocument_ = get(currentDocument);
+        let currentDocument_ = get(currentDocument);
         currentDocument_.modifiedOn = Date.now();
         currentDocument.set(currentDocument_);
         if (currentDocument_.type === 'notepad') {
-            var firstLine = (currentDocument_.content as string).split(Symbols.EOL)[0];
+            let firstLine = (currentDocument_.content as string).split(Symbols.EOL)[0];
 
             if (firstLine?.startsWith("@title")) {
                 var title = Saver.getTagValue(firstLine, "title").substring(0, 100);

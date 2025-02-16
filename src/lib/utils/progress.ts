@@ -6,7 +6,7 @@ import type { IndexEntry, IndexType } from "./types";
 const getDefaultProgressHtml = (v: string) => `<span class="opacity-15">${v}</span>`;
 
 export function roundPercent(value: number) {
-    var percent = (
+    let percent = (
         Math.round(
             Math.min(1, value) *
             1000,
@@ -18,21 +18,21 @@ export function roundPercent(value: number) {
 export class Progress {
     static get(target: any) {
         if (target.scrollTop != undefined) { // is notepad
-            var scrollDistance = target.scrollTop;
-            var scrollMax = target.scrollHeight - target.offsetHeight;
-            var ratio = Math.min(
+            let scrollDistance = target.scrollTop;
+            let scrollMax = target.scrollHeight - target.offsetHeight;
+            let ratio = Math.min(
                 1,
                 scrollMax === 0 ? 0 : scrollDistance / scrollMax,
             );
-            var percent_ = roundPercent(scrollMax === 0 ? 0 : scrollDistance / scrollMax);
+            let percent_ = roundPercent(scrollMax === 0 ? 0 : scrollDistance / scrollMax);
         } else {
-            var percent_ = target as string;
-            var ratio = Math.min(
+            let percent_ = target as string;
+            let ratio = Math.min(
                 1,
                 parseFloat(percent_) / 100,
             );
         }
-        var html = Array.from({ length: 10 }, (_, i) => Symbols.DOT)
+        let html = Array.from({ length: 10 }, (_, i) => Symbols.DOT)
             .map((v, i) => {
                 return i < ratio * 10 ? `<b>${v}</b>` : getDefaultProgressHtml(v);
             })
@@ -42,7 +42,7 @@ export class Progress {
     }
     static init(target: any) {
         if (!target) return;
-        var progress = Array.from({ length: 10 }, (_, i) => Symbols.DOT)
+        let progress = Array.from({ length: 10 }, (_, i) => Symbols.DOT)
             .map((v, i) => getDefaultProgressHtml(v))
             .join(Symbols.SPACE);
         target.innerHTML = progress;
@@ -57,7 +57,7 @@ export class Progress {
         }
 
         function splitByType(line: string, type: IndexType) {
-            var delimeter = Delimeters[type];
+            let delimeter = Delimeters[type];
             return (line.split(delimeter)[1] ?? "").trim();
         }
 
@@ -66,13 +66,13 @@ export class Progress {
         }
         currentDocument.subscribe((c) => {
             if (!c || c.type !== 'notepad') {
-                var stats_ = get(stats);
+                let stats_ = get(stats);
                 return;
             }
-            var index_: IndexEntry[] = [];
-            var line = 0;
-            var lastIndex = 0;
-            var stats_ = get(stats);
+            let index_: IndexEntry[] = [];
+            let line = 0;
+            let lastIndex = 0;
+            let stats_ = get(stats);
 
             // Resetting
             stats_.totalC = 0;
@@ -80,14 +80,14 @@ export class Progress {
             stats_.absC = 0;
             stats_.absW = 0;
 
-            for (var eachLine of (c.content as string).split(Symbols.EOL)) {
-                var cCount = eachLine.length;
-                var wCount = eachLine
+            for (let eachLine of (c.content as string).split(Symbols.EOL)) {
+                let cCount = eachLine.length;
+                let wCount = eachLine
                     .split(Symbols.SPACE)
                     .filter((e) => e.trim().length).length;
 
-                var start = stats_.absC + line;
-                var end = start + cCount;
+                let start = stats_.absC + line;
+                let end = start + cCount;
 
                 stats_.absC += cCount;
                 stats_.absW += wCount;
@@ -96,7 +96,7 @@ export class Progress {
                     stats_.totalC += cCount;
                     stats_.totalW += wCount;
                 }
-                var type = getIndexType(eachLine) as IndexType;
+                let type = getIndexType(eachLine) as IndexType;
                 if (type != "content") {
                     lastIndex = line;
                     stats_.totalC -= 2; // Excluding the symbol and space
