@@ -384,8 +384,8 @@
     </pdfjs-viewer-element>
     {#if !isChatting}
         <div
-            class:min-w-[calc(100vw-976px)]={!hideNotes}
-            class:max-w-[calc(100vw-976px)]={!hideNotes}
+            class:min-w-[30%]={!hideNotes}
+            class:max-w-[30%]={!hideNotes}
             class:min-w-[10%]={hideNotes}
             class:w-[10%]={hideNotes}
             class="duration-100 font overflow-scroll items-start flex flex-col"
