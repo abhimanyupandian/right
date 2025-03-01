@@ -43,10 +43,10 @@
                 </div>
             </div>
             <div>
-                Right is a distraction-free writing tool powered by AI, designed
-                to enhance focus and productivity. It is completely free to use,
-                with all data stored in your browser, ensuring privacy and
-                convenience.
+                Right is a distraction-free writing and reading tool powered by
+                AI, designed to enhance focus and productivity. It is completely
+                free to use, with all data stored in your browser, ensuring
+                privacy and convenience.
             </div>
             <div class="text-xl text-zinc-600">Credits</div>
             <div>
@@ -60,13 +60,30 @@
                 2. Right is developed using open-source tools, with its AI
                 capabilities powered by <a
                     class="text-blue-500"
-                    href="https://github.com/mlc-ai/web-llm"
-                    target="_blank">web-llm</a
+                    href="https://webllm.mlc.ai/"
+                    target="_blank">WebLLM</a
                 > on the backend.
             </div>
             <div>
                 3. Currently AI capabilities are only supported in machines on
-                browsers that support WebGPU. Please check
+                browsers that support WebGPU. Please check <a
+                    class="text-blue-500"
+                    href="https://github.com/mlc-ai/web-llm"
+                    target="_blank">WebLLM Github Repo</a
+                > for more details.
+            </div>
+            <div>
+                4. For the PDF Reader functionalities, Right uses <a
+                    class="text-blue-500"
+                    href="https://mozilla.github.io/pdf.js/"
+                    target="_blank">PDF.js</a
+                >
+                and
+                <a
+                    class="text-blue-500"
+                    href="https://mupdfjs.readthedocs.io/en/latest/#"
+                    target="_blank">MuPDF.js</a
+                >.
             </div>
         </div>
     </div>
