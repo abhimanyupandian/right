@@ -192,6 +192,11 @@
     function goToHighlight(pageNumber: number, location: number[]) {
         pdfViewer.pdfLinkService.goToPage(pageNumber);
         pdfViewer.eventBus.dispatch("scrolltooffset", { details: location });
+
+        const pdfContainer =
+            iframe.contentDocument.querySelector("#viewerContainer");
+        if (!pdfContainer) return;
+        pdfContainer.scrollLeft = $currentDocument.scrollLeft;
     }
 
     function toggleNotes() {
@@ -384,14 +389,10 @@
     </pdfjs-viewer-element>
     {#if !isChatting}
         <div
-            class:min-w-[30%]={!hideNotes}
-            class:max-w-[30%]={!hideNotes}
-            class:min-w-[10%]={hideNotes}
-            class:w-[10%]={hideNotes}
-            class="duration-100 font overflow-scroll items-start flex flex-col"
+            class="min-w-[25%] max-w-[25%] duration-100 bg-black bg-opacity-10 font overflow-scroll items-start flex flex-col"
         >
             <div
-                class="px-4 sticky top-0 z-[100] bg-[#222] h-[33px] border-b-[1px] border-black flex flex-row items-center justify-between w-full"
+                class="px-4 sticky top-0 z-[100] bg-[#222] h-[33px] min-h-[33px] border-b-[1px] border-black flex flex-row items-center justify-between w-full"
             >
                 <div></div>
                 <button on:click={toggleNotes} class="flex-0 text-sm"
@@ -400,9 +401,7 @@
                 <Fullscreen {pageEl}></Fullscreen>
             </div>
             <div
-                class:min-w-[100%]={!hideNotes}
-                class:w-[100%]={!hideNotes}
-                class:opacity-[25%]={hideNotes}
+                class:opacity-[5%]={hideNotes}
                 class="px-2 py-2 space-y-2 flex flex-col items-start"
             >
                 {#if $notes.size}
@@ -417,8 +416,6 @@
                             {#each page as note}
                                 {#if note.note}
                                     <button
-                                        class:min-w-[100%]={!hideNotes}
-                                        class:w-[100%]={!hideNotes}
                                         on:click={() =>
                                             goToHighlight(
                                                 pageNumber,
@@ -433,9 +430,7 @@
                                                 class={`${note.color} opacity-75 w-1 rounded-l-sm absolute left-0 top-0 flex-1 bottom-0`}
                                             ></div>
                                             <div class="ml-2 break-all">
-                                                {!hideNotes
-                                                    ? note.note
-                                                    : `${note.note.slice(0, 10)}...`}
+                                                {note.note}
                                             </div>
                                         </div>
                                     </button>
@@ -453,9 +448,9 @@
         <div class="absolute z-[1000]"><Stats bind:progressEl /></div>
         {#if isChatting}
             <div
-                class="pt-[42px] flex max-h-[calc(100vh-64px)] min-h-[calc(100vh-32px)] space-x-2 min-w-[calc(100vw-976px)] max-w-[calc(100vw-976px)]"
+                class="pt-4 flex max-h-[calc(100vh-64px)] min-h-[calc(100vh-32px)] space-x-2 max-w-[400px] min-w-[400px]"
             >
-                <Arthur bind:isChatting />
+                <Arthur width={`400px`} bind:isChatting />
             </div>
         {/if}
     {:else}

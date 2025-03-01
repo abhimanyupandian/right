@@ -162,27 +162,18 @@
     <div id="page" bind:this={pageEl} class="flex flex-col h-[100vh] relative">
         <FileHunter></FileHunter>
         <status
-            class="h-[40px] fixed flex-row w-full min-w-full justify-between items-center flex px-2"
+            class="h-[40px] fixed flex-row w-full min-w-full justify-between items-center flex px-4"
         >
-            <div class="max-w-[320px] min-w-[320px]"></div>
-            <div
-                class="max-w-[320px] min-w-[320px] flex flex-row justify-between items-center"
-            >
-                <div></div>
-                <div
-                    class="flex flex-row space-x-2 items-center justify-center"
-                >
-                    <Fullscreen {pageEl}></Fullscreen>
-                </div>
-            </div>
+            <div></div>
+            <Fullscreen {pageEl}></Fullscreen>
         </status>
         <div
-            class="pt-[42px] flex max-h-[calc(100vh-64px)] min-h-[calc(100vh-32px)] min-w-screen max-w-screen w-screen space-x-2"
+            class="pt-[42px] flex max-h-[calc(100vh-64px)] min-h-[calc(100vh-32px)] space-x-2"
         >
             <Nav bind:cursorPosition />
             <ContextViewer bind:isChatting></ContextViewer>
             <Editor bind:editorEl bind:isChatting />
-            <Arthur bind:isChatting />
+            <Arthur width={`100%`} bind:isChatting />
         </div>
 
         <Stats bind:progressEl />

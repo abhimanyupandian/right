@@ -8,6 +8,7 @@
     const IS_DESKTOP = !!(globalThis as any).IS_DESKTOP;
 
     export let isChatting: boolean;
+    export let width: string;
 
     let error: string = "";
     let prompt: string = "";
@@ -281,7 +282,7 @@
     <div
         class:opacity-100={$arthur.focused}
         class:pb-10={IS_DESKTOP}
-        class="duration-100 flex-1 flex-col max-h-[calc(100vh)] max-w-[calc(100vw-976px)] min-w-[calc(100vw-976px)] justify-between px-4 lg:block md:hidden pb-2"
+        class={`px-2 duration-100 flex-1 flex-col max-h-[calc(100vh)] justify-between lg:block md:hidden pb-2 max-w-[${width}] min-w-[${width}]`}
     >
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -314,11 +315,11 @@
                             </div>
                         {:else if each.source == "context"}
                             <div
-                                class="flex flex-row items-center justify-center w-full opacity-10 hover:opacity-100"
+                                class="flex flex-row items-center justify-center w-full"
                             >
                                 <div
                                     id={`CONTEXT:${each.timestamp}`}
-                                    class="bubble p-4 py-2 rounded-lg text-center text-white bg-black w-full"
+                                    class="bubble p-4 py-2 rounded-lg text-left text-white bg-black w-full"
                                 >
                                     {each.message}
                                 </div>
@@ -339,35 +340,33 @@
                 </div>
             </div>
             {#if prompt && !isLoading && !isStreaming}
-                <div class="w-full">
-                    <div class="flex flex-col justify-center items-start">
-                        {#if filteredCommands.length === 0 || error}
-                            <div class="text-red-500 text-xs self-center">
-                                {error ||
-                                    `Invalid action. Please start your command with
+                <div class="flex flex-col justify-center items-start">
+                    {#if filteredCommands.length === 0 || error}
+                        <div class="text-red-500 text-xs self-center">
+                            {error ||
+                                `Invalid action. Please start your command with
                                 '/' followed by a valid action.`}
-                            </div>
-                        {:else}
+                        </div>
+                    {:else}
+                        <div class="flex flex-row space-x-2 items-center">
                             <div
-                                class="flex flex-row space-x-2 items-center overflow-hidden"
+                                style="scrollbar-width: none; scrollbar-height: none;"
+                                class={`whitespace-nowrap space-x-2 max-w-[${width}] min-w-[${width}]`}
                             >
                                 <div
-                                    style="scrollbar-width: none;"
-                                    class="max-w-[460px] overflow-x-auto whitespace-nowrap space-x-2"
+                                    class="flex flex-row space-x-2 overflow-x-scroll no-scrollbar"
                                 >
-                                    <div class="flex flex-row space-x-2">
-                                        {#each filteredCommands as each}
-                                            <div
-                                                class="bg-zinc-900 text-white px-3 py-1 rounded-md"
-                                            >
-                                                {`/${each.label}`}
-                                            </div>
-                                        {/each}
-                                    </div>
+                                    {#each filteredCommands as each}
+                                        <div
+                                            class="bg-zinc-900 text-white px-3 py-1 rounded-md"
+                                        >
+                                            {`/${each.label}`}
+                                        </div>
+                                    {/each}
                                 </div>
                             </div>
-                        {/if}
-                    </div>
+                        </div>
+                    {/if}
                 </div>
             {/if}
             <input
@@ -392,7 +391,7 @@
     .font {
         color: var(--f_high) !important;
         font-family: var(--font-family);
-        font-size: 14px;
+        font-size: 13px;
     }
     input {
         background: var(--background) !important;
@@ -405,7 +404,7 @@
         background: var(--background) !important;
     }
     .bubble {
-        font-size: 14px;
+        font-size: 13px;
     }
     .bubble::selection {
         background: black !important;
