@@ -48,7 +48,7 @@
                 free to use, with all data stored in your browser, ensuring
                 privacy and convenience.
             </div>
-            <div class="text-xl text-zinc-600">Credits</div>
+            <div class="text-xl text-zinc-600">Credits and Attributions</div>
             <div>
                 1. Full credit for the design goes to the team behind <a
                     class="text-blue-500"
