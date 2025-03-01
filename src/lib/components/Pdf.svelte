@@ -389,7 +389,7 @@
     </pdfjs-viewer-element>
     {#if !isChatting}
         <div
-            class="min-w-[25%] max-w-[25%] duration-100 bg-black bg-opacity-10 font overflow-scroll items-start flex flex-col"
+            class="min-w-[400px] max-w-[400px] duration-100 bg-black bg-opacity-10 font overflow-scroll items-start flex flex-col"
         >
             <div
                 class="px-4 sticky top-0 z-[100] bg-[#222] h-[33px] min-h-[33px] border-b-[1px] border-black flex flex-row items-center justify-between w-full"
@@ -402,7 +402,7 @@
             </div>
             <div
                 class:opacity-[5%]={hideNotes}
-                class="px-2 py-2 space-y-2 flex flex-col items-start"
+                class="px-2 py-2 space-y-2 flex flex-col items-start hover:opacity-[100%]"
             >
                 {#if $notes.size}
                     {#each [...$notes] as [pageNumber, page]}
