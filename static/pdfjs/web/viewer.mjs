@@ -14435,6 +14435,13 @@ const PDFViewerApplication = {
       });
     }
     addWindowResolutionChange();
+    xScrollLockButton.addEventListener("click", (e) => {
+      xScrollLockToggle.checked = !xScrollLockToggle.checked;
+      mainContainer.style.setProperty('overflow-x',
+        xScrollLockToggle.checked ? 'hidden' : 'scroll', '');
+      xScrollLockButton.style.setProperty('opacity', 
+        xScrollLockToggle.checked ? '60%': '20%', '');
+    })
     window.addEventListener("wheel", onWheel.bind(this), {
       passive: false,
       signal
@@ -15197,6 +15204,8 @@ function getViewerConfiguration() {
       editorFreeTextButton: document.getElementById("editorFreeTextButton"),
       editorFreeTextParamsToolbar: document.getElementById("editorFreeTextParamsToolbar"),
       editorHighlightButton: document.getElementById("editorHighlightButton"),
+      xScrollLockButton: document.getElementById("xScrollLockButton"),
+      xScrollLockToggle: document.getElementById("xScrollLockToggle"),
       editorHighlightParamsToolbar: document.getElementById("editorHighlightParamsToolbar"),
       editorHighlightColorPicker: document.getElementById("editorHighlightColorPicker"),
       editorInkButton: document.getElementById("editorInkButton"),

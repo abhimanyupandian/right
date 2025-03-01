@@ -4423,6 +4423,25 @@ dialog :link {
   padding: 0;
 }
 
+.customToolbarButton {
+  height: 100%;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: transparent;
+  outline: none;
+  border-radius: 2px;
+  box-sizing: border-box;
+  font: message-box;
+  flex: none;
+  position: relative;
+  padding: 0;
+  opacity: 20%;
+}
+
 .toolbarButton>span {
   display: inline-block;
   width: 0;
@@ -4465,6 +4484,18 @@ dialog :link {
 }
 
 .toolbarButton:is(:hover, :focus-visible)::before {
+  background-color: var(--toolbar-icon-hover-bg-color);
+}
+
+.customToolbarButton.toggled:hover:active {
+  background-color: var(--toggled-hover-active-btn-color);
+}
+
+.customToolbarButton:is(:hover, :focus-visible) {
+  background-color: var(--button-hover-color);
+}
+
+.customToolbarButton:is(:hover, :focus-visible)::before {
   background-color: var(--toolbar-icon-hover-bg-color);
 }
 
